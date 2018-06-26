@@ -40,6 +40,17 @@ def file_name_from_path(path, dtype):
     return '_'.join(tmp) + '.h5'
 
 
+def convert(cell, dtype):
+    if dtype != np.uint8:
+        raise RuntimeError("Only conversion to 'uint8' is supported")
+
+    return cell
+    min_intensity = np.amin(cell)
+    max_intensity = np.amax(cell)
+    cell -= min_intensity
+    return cell // ((max_intensity - min_intensity + 1) / 256)
+
+
 channel, bdv_input_file_path, output_dtype = parse_args(sys.argv)
 
 f_input = h5py.File(bdv_input_file_path, "r")
@@ -71,4 +82,4 @@ for path in cell_paths:
                                        compression="gzip",
                                        compression_opts=1)
         cell = f_input[path]
-        dset[:] = cell
+        dset[:] = convert(cell, dtype)
