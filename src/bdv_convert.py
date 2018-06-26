@@ -44,7 +44,6 @@ def convert(cell, dtype):
     if dtype != np.uint8:
         raise RuntimeError("Only conversion to 'uint8' is supported")
 
-    return cell
     min_intensity = np.amin(cell)
     max_intensity = np.amax(cell)
     cell -= min_intensity
