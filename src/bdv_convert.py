@@ -6,14 +6,14 @@ import os
 
 """
 Usage:
-python stack_bdv.py <Channel> <BigDataViewerFile> [Dtype] 
+python bdv_convert.py <Channel> <BigDataViewerFile> [Dtype] 
 where channel in {0, 1}. Optional Dtype param specifies desired output type (e.g. uint8).
 
 Output: one h5 file per time-point
 """
 if len(sys.argv) < 3:
     print(
-        "Usage: python stack_bdv.py <Channel> <BigDataViewerFile> [Dtype]")
+        "Usage: python bdv_convert.py <Channel> <BigDataViewerFile> [Dtype]")
     sys.exit(1)
 
 
