@@ -39,7 +39,7 @@ def merge_raw_with_segmented(raw_data_path, segmented_file_path):
                 exported_data = exported_data[..., 0]
 
             # create labels in the raw data file
-            if not raw_data["/volumes/labels/"]:
+            if "/volumes/labels/" not in raw_data:
                 raw_data.create_group("/volumes/labels/")
 
             raw_data.create_dataset(
