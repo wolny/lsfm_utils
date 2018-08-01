@@ -46,8 +46,11 @@ def squeeze_label_ids(label_ids):
     """
     remapped_label_ids = numpy.copy(label_ids)
     unique_ids = set(remapped_label_ids.flatten())
+    print(f"Number of unique label ids: {len(unique_ids)}")
+
     id_map = {k: v + 1 for v, k in enumerate(unique_ids)}
     for k, v in id_map.items():
+        print(f"Mapping: {k} -> {v}")
         remapped_label_ids[remapped_label_ids == k] = v
     return remapped_label_ids
 
