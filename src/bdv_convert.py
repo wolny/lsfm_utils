@@ -1,16 +1,17 @@
+"""
+Usage:
+python bdv_convert.py <Channel> <BigDataViewerFile> [Dtype]
+where channel in {0, 1}. Optional Dtype param specifies desired output type (e.g. uint8).
+
+Output: one h5 file per time-point
+"""
+
 import h5py
 import re
 import sys
 import numpy as np
 import os
 
-"""
-Usage:
-python bdv_convert.py <Channel> <BigDataViewerFile> [Dtype] 
-where channel in {0, 1}. Optional Dtype param specifies desired output type (e.g. uint8).
-
-Output: one h5 file per time-point
-"""
 if len(sys.argv) < 3:
     print(
         "Usage: python bdv_convert.py <Channel> <BigDataViewerFile> [Dtype]")

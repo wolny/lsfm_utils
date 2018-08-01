@@ -1,13 +1,14 @@
-import re
-import sys
-
-import h5py
-
 """
 Usage:
 python stack_bdv.py <Channel> <BigDataViewerFile> <OutputFile>
 where channel in {0, 1}
 """
+
+import re
+import sys
+
+import h5py
+
 if len(sys.argv) != 4:
     print(
         "Usage: python stack_bdv.py <Channel> <BigDataViewerFile> <OutputFile>")
