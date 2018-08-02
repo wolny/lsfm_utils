@@ -14,6 +14,7 @@ import sys
 
 import h5py
 import numpy
+from concurrent.futures import ProcessPoolExecutor
 
 if len(sys.argv) < 3:
     print(
@@ -44,16 +45,20 @@ def squeeze_label_ids(label_ids):
     :param label_ids: input numpy array
     :return: numpy array of the same shape as label_ids with the original values remapped
     """
-    remapped_label_ids = numpy.copy(label_ids)
-    unique_ids = set(remapped_label_ids.flatten())
+    label_ids_copy = numpy.copy(label_ids)
+    unique_ids = sorted(set(label_ids_copy.flatten()))
     print(f"Number of unique label ids: {len(unique_ids)}")
 
-    id_map = {k: v + 1 for v, k in enumerate(unique_ids)}
-    for k, v in id_map.items():
-        print(f"Mapping: {k} -> {v}")
-        remapped_label_ids[remapped_label_ids == k] = v
-    return remapped_label_ids
+    max_label_id = unique_ids[-1]
+    label_map_array = numpy.arange(0, max_label_id + 1)
+    label_map = {k: v + 1 for v, k in enumerate(unique_ids)}
+    # replace old labels (label_map.keys()) with new ones (label_map.values())
+    label_map_array[list(label_map.keys())] = list(label_map.values())
+    # fancy indexing FTW
+    return label_map_array[label_ids_copy]
 
+
+pool = ProcessPoolExecutor()
 
 with h5py.File(input_h5_file, "r") as input_h5:
     with h5py.File(output_h5_file, "w") as output_h5:
