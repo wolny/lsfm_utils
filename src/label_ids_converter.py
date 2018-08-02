@@ -14,7 +14,8 @@ import sys
 
 import h5py
 import numpy
-from concurrent.futures import ProcessPoolExecutor
+
+import time
 
 if len(sys.argv) < 3:
     print(
@@ -58,12 +59,17 @@ def squeeze_label_ids(label_ids):
     return label_map_array[label_ids_copy]
 
 
-pool = ProcessPoolExecutor()
-
 with h5py.File(input_h5_file, "r") as input_h5:
     with h5py.File(output_h5_file, "w") as output_h5:
         label_ids = input_h5["/volumes/labels/merged_ids"]
+
+        start = time.time()
+
         squeezed_label_ids = squeeze_label_ids(label_ids)
+
+        end = time.time()
+
+        print("Label squeezing took %.3f" % (end - start))
 
         max_label_id = numpy.max(squeezed_label_ids)
         if max_label_id > numpy.iinfo(output_dtype).max:
