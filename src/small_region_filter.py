@@ -74,4 +74,5 @@ with h5py.File(input_h5_file, "r") as input_h5:
         output_h5.create_dataset(
             "/volumes/labels/merged_ids",
             data=filtered_label_ids,
+            dtype=numpy.uint16,
             compression="gzip")
