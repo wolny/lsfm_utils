@@ -50,5 +50,6 @@ with h5py.File(input_h5_file, "r+") as input_h5:
     print("Computing affinities took %.3f" % (end - start))
 
     with h5py.File(output_h5_file, "w") as output_h5:
-        output_h5.create_dataset("affinities", data=affinities)
-        output_h5.create_dataset("mask", data=mask)
+        output_h5.create_dataset("affinities", data=affinities,
+                                 compression="gzip")
+        output_h5.create_dataset("mask", data=mask, compression="gzip")
