@@ -52,7 +52,7 @@ def squeeze_label_ids(label_ids):
 
     max_label_id = unique_ids[-1]
     new_unique_ids = numpy.arange(0, max_label_id + 1)
-    label_map = {k: v + 1 for v, k in enumerate(unique_ids)}
+    label_map = {k: v for v, k in enumerate(unique_ids, 1)}
     # replace old labels (label_map.keys()) with new ones (label_map.values())
     new_unique_ids[list(label_map.keys())] = list(label_map.values())
     # reconstruct the label_ids array with the new labels
