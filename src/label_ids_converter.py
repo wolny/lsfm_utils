@@ -47,16 +47,13 @@ def squeeze_label_ids(label_ids):
     :return: numpy array of the same shape as label_ids with the original values remapped
     """
     label_ids_copy = numpy.copy(label_ids)
-    unique_ids = numpy.unique(label_ids_copy)
-    print(f"Number of unique label ids: {len(unique_ids)}")
-
-    max_label_id = unique_ids[-1]
-    new_unique_ids = numpy.arange(0, max_label_id + 1)
-    label_map = {k: v for v, k in enumerate(unique_ids, 1)}
-    # replace old labels (label_map.keys()) with new ones (label_map.values())
-    new_unique_ids[list(label_map.keys())] = list(label_map.values())
+    unique_ids, indices = numpy.unique(label_ids_copy, return_inverse=True)
+    num_label_ids = len(unique_ids)
+    print(f"Number of unique label ids: {num_label_ids}")
+    # just use the range [1:num_label_ids+1] as new label ids
+    unique_ids = numpy.arange(1, num_label_ids + 1)
     # reconstruct the label_ids array with the new labels
-    return new_unique_ids[label_ids_copy]
+    return unique_ids[indices].reshape(label_ids_copy.shape)
 
 
 with h5py.File(input_h5_file, "r") as input_h5:
