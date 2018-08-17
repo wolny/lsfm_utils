@@ -23,8 +23,6 @@ from neurofire.criteria.loss_wrapper import LossWrapper
 from neurofire.criteria.loss_transforms import ApplyAndRemoveMask, RemoveSegmentationFromTarget, InvertTarget
 from neurofire.metrics.arand import ArandErrorFromConnectedComponents
 
-# the dataset loader for the platyneris data, implemented in
-# ./platyneris_loader
 from primordia_loader import get_primordia_loaders
 
 logging.basicConfig(format='[+][%(asctime)-15s][%(name)s %(levelname)s]'
