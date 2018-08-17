@@ -59,7 +59,8 @@ def set_up_training(project_directory, config):
     # metric = ArandErrorFromConnectedComponentsOnAffinities(thresholds=[.5, .6, .7, .8, .9],
     #                                                        invert_affinities=True)
     metric = ArandErrorFromConnectedComponents(thresholds=[.5, .6, .7, .8, .9],
-                                               invert_input=True)
+                                               invert_input=True,
+                                               average_input=True)
 
     logger.info("Building trainer.")
     smoothness = 0.95
