@@ -111,7 +111,7 @@ def training(project_directory,
     train_loader = get_primordia_loaders(data_configuration_file)
 
     logger.info("Loading validation data loader from %s." % validation_configuration_file)
-    validation_loader = get_platyneris_loaders(validation_configuration_file)
+    validation_loader = get_primordia_loaders(validation_configuration_file)
 
     trainer.set_max_num_iterations(max_training_iters)
 
