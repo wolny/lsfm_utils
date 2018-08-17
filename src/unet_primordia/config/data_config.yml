@@ -37,9 +37,9 @@ volume_config:
     affinity_config:
         # voxel size is 0.165x0.165x0.25 um so almost anisotropic, but should I scale the kernel mask anyway?
         # this gives 9 output channels
-        offsets: [[-1, 0, 0], [0, -1, 0], [0, 0, -1],
-                  [-4, 0, 0], [0, -4, 0], [0, 0, -4],
-                  [-8, 0, 0], [0, -8, 0], [0, 0, -8]]
+      offsets: [[-1, 0, 0], [0, -1, 0], [0, 0, -1],
+                [-4, 0, 0], [0, -4, 0], [0, 0, -4],
+                [-8, 0, 0], [0, -8, 0], [0, 0, -8]]
       retain_mask: True
       ignore_label: 0
 
