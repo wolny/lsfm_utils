@@ -8,10 +8,10 @@ dataset_names:
 slicing_config:
   # Sliding window size
   window_size:
-    '1': [64, 100, 100]
+    '1': [64, 200, 200]
   # Sliding window stride
   stride:
-    '1': [4, 50, 50]
+    '1': [4, 100, 100]
   # Data slice to iterate over.
   # data_slice:
   #   A: '0:65, :, :'
