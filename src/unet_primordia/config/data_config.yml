@@ -1,0 +1,65 @@
+# Specify the names of the datasets
+dataset_names:
+  - '1'
+
+# Specify how the data needs to be sliced before feeding to the network.
+# We use a 3D sliding window over the dataset to extract patches, which
+# are then fed to the network as batches.
+slicing_config:
+  # Sliding window size
+  window_size:
+    '1': [64, 200, 200]
+  # Sliding window stride
+  stride:
+    '1': [4, 100, 100]
+  # Data slice to iterate over.
+  # data_slice:
+  #   A: '0:65, :, :'
+  #   B: '0:65, :, :'
+  #   C: '0:65, :, :'
+    
+# Specify paths to volumes
+volume_config:
+  # Raw data
+  raw:
+    path:
+      '1': '/g/kreshuk/wolny/Datasets/2017-08-02_17.49.34_stPVB003-2-2xDR5v2_F3_nb25_Marvelous/t00025_s00_uint16_ground_truth_cropped.h5'
+    path_in_h5_dataset:
+      '1': 'volumes/raw'
+    dtype: float32
+  # Segmentation
+  segmentation:
+    path:
+      '1': '/g/kreshuk/wolny/Datasets/2017-08-02_17.49.34_stPVB003-2-2xDR5v2_F3_nb25_Marvelous/t00025_s00_uint16_ground_truth_cropped.h5'
+    path_in_h5_dataset:
+      '1': 'volumes/labels'
+    dtype: float32
+    affinity_config:
+        # voxel size is 0.165x0.165x0.25 um so almost anisotropic, but should I scale the kernel mask anyway?
+        # this gives 9 output channels
+        offsets: [[-1, 0, 0], [0, -1, 0], [0, 0, -1],
+                  [-4, 0, 0], [0, -4, 0], [0, 0, -4],
+                  [-8, 0, 0], [0, -8, 0], [0, 0, -8]]
+      retain_mask: True
+      ignore_label: 0
+
+
+# Configuration for the master dataset.
+master_config:
+  # We might need order 0 interpolation if we have segmentation in there somewhere.
+  elastic_transform:
+    alpha: 2000.
+    sigma: 50.
+    order: 0
+
+
+# Specify configuration for the loader
+loader_config:
+  # Number of processes to use for loading data. Set to (say) 10 if you wish to
+  # use 10 CPU cores, or to 0 if you wish to use the same process for training and
+  # data-loading (generally not recommended).
+  batch_size: 1
+  num_workers: 4
+  drop_last: True
+  pin_memory: True
+  shuffle: True
