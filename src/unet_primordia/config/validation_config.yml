@@ -62,5 +62,5 @@ loader_config:
   batch_size: 1
   num_workers: 1
   drop_last: True
-  pin_memory: True
+  pin_memory: False
   shuffle: True
