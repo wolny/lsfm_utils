@@ -23,7 +23,7 @@ from neurofire.criteria.loss_wrapper import LossWrapper
 from neurofire.criteria.loss_transforms import ApplyAndRemoveMask, RemoveSegmentationFromTarget, InvertTarget
 from neurofire.metrics.arand import ArandErrorFromConnectedComponents
 
-from primordia_loader import get_primordia_loaders
+from primordia_loader.loader import get_primordia_loaders
 
 logging.basicConfig(format='[+][%(asctime)-15s][%(name)s %(levelname)s]'
                            ' %(message)s',
@@ -59,7 +59,7 @@ def set_up_training(project_directory, config):
     # metric = ArandErrorFromConnectedComponentsOnAffinities(thresholds=[.5, .6, .7, .8, .9],
     #                                                        invert_affinities=True)
     metric = ArandErrorFromConnectedComponents(thresholds=[.5, .6, .7, .8, .9],
-                                               invert_inputs=True)
+                                               invert_input=True)
 
     logger.info("Building trainer.")
     smoothness = 0.95
