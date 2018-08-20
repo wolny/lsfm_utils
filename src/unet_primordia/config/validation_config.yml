@@ -23,14 +23,14 @@ volume_config:
   # Raw data
   raw:
     path:
-      '1': '/g/kreshuk/wolny/Datasets/2017-08-02_17.49.34_stPVB003-2-2xDR5v2_F3_nb25_Marvelous/t00014_s00_uint16_ground_truth.h5'
+      '1': '/g/kreshuk/wolny/Datasets/2017-08-02_17.49.34_stPVB003-2-2xDR5v2_F3_nb25_Marvelous/t00014_s00_uint16_ground_truth_cropped.h5'
     path_in_h5_dataset:
       '1': 'volumes/raw'
     dtype: float32
   # Segmentation
   segmentation:
     path:
-      '1': '/g/kreshuk/wolny/Datasets/2017-08-02_17.49.34_stPVB003-2-2xDR5v2_F3_nb25_Marvelous/t00014_s00_uint16_ground_truth.h5'
+      '1': '/g/kreshuk/wolny/Datasets/2017-08-02_17.49.34_stPVB003-2-2xDR5v2_F3_nb25_Marvelous/t00014_s00_uint16_ground_truth_cropped.h5'
     path_in_h5_dataset:
       '1': 'volumes/labels'
     dtype: float32

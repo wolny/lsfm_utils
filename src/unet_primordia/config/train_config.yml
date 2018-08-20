@@ -4,7 +4,7 @@ model_kwargs:
   in_channels: 1
   out_channels: 9
   initial_num_fmaps: 12
-  fmap_growth: 2
+  fmap_growth: 4
   # how much to downscale in the encoder path (since our data is almost anisotropic downscale equally in each axis)
   # you could also pass a list of scale factor for each axis [f_z, f_y, f_x]
   scale_factor: [2, 2, 2]
