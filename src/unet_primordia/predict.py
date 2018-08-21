@@ -8,8 +8,7 @@ import numpy as np
 import torch
 from primordia_loader.loader import get_test_dataset
 
-import neurofire.models as models
-from inferno.utils.io_utils import yaml2dict
+from inferno.trainers.basic import Trainer
 
 logging.basicConfig(format='[%(asctime)-15s][%(name)s %(levelname)s]'
                            ' %(message)s',
@@ -19,14 +18,9 @@ logging.basicConfig(format='[%(asctime)-15s][%(name)s %(levelname)s]'
 logger = logging.getLogger(__name__)
 
 
-def load_model(train_config, model_path):
-    model_config = yaml2dict(train_config)
-
-    model_name = model_config.get('model_name')
-    model = getattr(models, model_name)(**model_config.get('model_kwargs'))
-    model.cuda()
+def load_model(model_dir):
     logger.info(f'Loading model from: {model_path}')
-    model.load_state_dict(torch.load(model_path))
+    model = Trainer().load_model(model_dir, 'best_checkpoint.pytorch').model
     return model
 
 
@@ -68,10 +62,11 @@ def main():
     project_dir = args.project_dir
     output_file = args.output_file
 
-    model_path = os.path.join(project_dir, 'Weights/best_checkpoint.pytorch')
+    model_dir = os.path.join(project_dir, 'Weights')
 
+    logger.info('Loading dataset...')
     raw_volume = get_test_dataset(test_config)
-    model = load_model(train_config, model_path)
+    model = load_model(model_dir)
 
     output = predict(model, raw_volume)
 
