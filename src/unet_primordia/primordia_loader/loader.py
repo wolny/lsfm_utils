@@ -141,3 +141,18 @@ def get_primordia_loaders(config):
     datasets = PrimordiaDatasets.from_config(config)
     loader = DataLoader(datasets, **config.get('loader_config'))
     return loader
+
+
+def get_test_dataset(config_file):
+    config = yaml2dict(config_file)
+
+    volume_config = config.get('volume_config')
+    slicing_config = config.get('slicing_config')
+    assert len(config.get('dataset_names')) == 1
+    name = config.get('dataset_names')[0]
+
+    raw_volume_kwargs = dict(volume_config.get('raw'))
+    raw_volume_kwargs.update(slicing_config)
+
+    raw_volume = RawVolume(name=name, return_index_spec=True, **raw_volume_kwargs)
+    return raw_volume
