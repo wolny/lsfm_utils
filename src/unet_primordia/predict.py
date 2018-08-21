@@ -19,8 +19,9 @@ logger = logging.getLogger(__name__)
 
 
 def load_model(model_dir):
-    logger.info(f'Loading model from: {model_dir}')
-    model = Trainer().load_model(model_dir, 'best_checkpoint.pytorch').model
+    logger.info(f'Loading best checkpoint from: {model_dir}')
+    model = Trainer().load(from_directory=model_dir, best=True,
+                           filename='best_checkpoint.pytorch').model
     return model
 
 
