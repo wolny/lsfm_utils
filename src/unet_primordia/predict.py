@@ -25,11 +25,13 @@ def load_model(train_config, model_path):
     model_name = model_config.get('model_name')
     model = getattr(models, model_name)(**model_config.get('model_kwargs'))
     model.cuda()
+    logger.info(f'Loading model from: {model_path}')
     model.load_state_dict(torch.load(model_path))
     return model
 
 
 def predict(model, dataset):
+    # initialize the output prediction array
     output = np.zeros((model.out_channels,) + dataset.volume.shape,
                       dtype='float32')
     device = torch.device('cuda:0')
@@ -40,14 +42,14 @@ def predict(model, dataset):
             # (C,) + (D,H,W)
             index = (slice(0,
                            model.out_channels),) + index_spec.base_sequence_at_index
-            # convert to torch tensor
+            # convert to torch tensor 1xCxDxHxW
             t_shape = (1,) + (model.in_channels,) + patch.shape
             patch = torch.from_numpy(patch).view(t_shape).to(device)
             # forward pass
             probs = model(patch)
             # convert to numpy array
             probs = probs.squeeze().cpu().numpy()
-            # write to output array
+            # write to the output prediction array
             output[index] = probs
 
     return output
@@ -73,6 +75,11 @@ def main():
 
     output = predict(model, raw_volume)
 
+    save_predictions(output, output_file)
+
+
+def save_predictions(output, output_file):
+    logger.info(f'Saving predictions to: {output_file}')
     with h5py.File(output_file, "w") as output_h5:
         output_h5.create_dataset(
             'probability_maps',
