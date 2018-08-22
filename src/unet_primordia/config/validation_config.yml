@@ -7,36 +7,28 @@ dataset_names:
 # are then fed to the network as batches.
 slicing_config:
   # Sliding window size
-  window_size:
-    '1': [64, 200, 200]
+  window_size: [64, 200, 200]
   # Sliding window stride
-  stride:
-    '1': [4, 100, 100]
-  # Data slice to iterate over.
-  # data_slice:
-  #   A: '0:65, :, :'
-  #   B: '0:65, :, :'
-  #   C: '0:65, :, :'
+  stride: [4, 100, 100]
 
 # Specify paths to volumes
 volume_config:
   # Raw data
   raw:
     path:
-      '1': '/g/kreshuk/wolny/Datasets/2017-08-02_17.49.34_stPVB003-2-2xDR5v2_F3_nb25_Marvelous/t00014_s00_uint16_ground_truth_cropped.h5'
+      '1': '<fullpath>'
     path_in_h5_dataset:
       '1': 'volumes/raw'
     dtype: float32
   # Segmentation
   segmentation:
     path:
-      '1': '/g/kreshuk/wolny/Datasets/2017-08-02_17.49.34_stPVB003-2-2xDR5v2_F3_nb25_Marvelous/t00014_s00_uint16_ground_truth_cropped.h5'
+      '1': '<fullpath>'
     path_in_h5_dataset:
       '1': 'volumes/labels'
     dtype: float32
     affinity_config:
-        # voxel size is 0.165x0.165x0.25 um so almost anisotropic, but should I scale the kernel mask anyway?
-        # this gives 9 output channels
+        # 9 output channels
       offsets: [[-1, 0, 0], [0, -1, 0], [0, 0, -1],
                 [-4, 0, 0], [0, -4, 0], [0, 0, -4],
                 [-8, 0, 0], [0, -8, 0], [0, 0, -8]]
@@ -47,7 +39,6 @@ volume_config:
 # Configuration for the master dataset.
 master_config:
   # We might need order 0 interpolation if we have segmentation in there somewhere.
-  # we could probably ignore data augmentation during validation?
   elastic_transform:
     alpha: 2000.
     sigma: 50.

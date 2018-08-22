@@ -6,7 +6,7 @@ import sys
 import h5py
 import numpy as np
 import torch
-from primordia_loader.loader import get_raw_volume
+from primordia_loader.loader import get_raw_volumes
 
 from inferno.trainers.basic import Trainer
 
@@ -26,7 +26,8 @@ def load_model(model_dir):
 
 
 def predict(model, dataset, device):
-    logger.info(f'Running prediction on dataset {dataset.name}...')
+    logger.info(
+        f'Running prediction on dataset {dataset.name}: {dataset.path}...')
     # number of input channels expected by the model
     in_channels = model.in_channels
     # number of output channels expected by the model
@@ -93,21 +94,20 @@ def save_predictions(probability_maps, output_file, average_channels=True):
 
 
 def main():
-    test_config = './config/test_config.yml'
+    def _get_output_file(dataset):
+        volume_file, volume_ext = os.path.splitext(dataset.path)
+        return volume_file + '_probabilities' + volume_ext
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--project_dir', type=str)
-    parser.add_argument('--output_file', type=str)
+    parser.add_argument('--model_dir', type=str)
+    parser.add_argument('--config_path', type=str)
 
     args = parser.parse_args()
 
-    project_dir = args.project_dir
-    output_file = args.output_file
+    model_dir = args.model_dir
+    test_config = args.test_config
 
-    model_dir = os.path.join(project_dir, 'Weights')
-
-    logger.info('Loading RawVolume...')
-    raw_volume = get_raw_volume(test_config)
+    raw_volumes = get_raw_volumes(test_config)
 
     model = load_model(model_dir)
 
@@ -118,9 +118,12 @@ def main():
             'No CUDA device available. Predictions will be slooow...')
         device = torch.device('cpu')
 
-    probability_maps = predict(model, raw_volume, device)
+    for raw_volume in raw_volumes:
+        probability_maps = predict(model, raw_volume, device)
 
-    save_predictions(probability_maps, output_file)
+        output_file = _get_output_file(raw_volume)
+
+        save_predictions(probability_maps, output_file)
 
 
 if __name__ == '__main__':

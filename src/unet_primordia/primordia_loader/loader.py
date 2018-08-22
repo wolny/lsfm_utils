@@ -1,19 +1,17 @@
+from torch.utils.data.dataloader import DataLoader
+
 from inferno.io.core import ZipReject, Concatenate
 from inferno.io.transform import Compose
 from inferno.io.transform.generic import AsTorchBatch
-from inferno.io.transform.volume import RandomFlip3D, VolumeAsymmetricCrop
 from inferno.io.transform.image import RandomRotate, ElasticTransform
+from inferno.io.transform.volume import RandomFlip3D, VolumeAsymmetricCrop
 from inferno.utils.io_utils import yaml2dict
-
-from torch.utils.data.dataloader import DataLoader
-
+from neurofire.datasets.cremi.loaders import RawVolume
 from neurofire.datasets.cremi.loaders import SegmentationVolume
 from neurofire.transform.affinities import affinity_config_to_transform
-from neurofire.transform.volume import RandomSlide, RejectNonZeroThreshold
-from neurofire.datasets.cremi.loaders import RawVolume
+from neurofire.transform.volume import RejectNonZeroThreshold
 
 
-# The dataloader for one platyneris data block
 class PrimordiaDataset(ZipReject):
     def __init__(self, name, volume_config, slicing_config, master_config=None):
         assert isinstance(volume_config, dict)
@@ -126,16 +124,8 @@ class PrimordiaDatasets(Concatenate):
 def get_primordia_loaders(config):
     """
     Gets Primordia loaders given a the path to a configuration file.
-
-    Parameters
-    ----------
-    config : str or dict
-        (Path to) Data configuration.
-
-    Returns
-    -------
-    torch.utils.data.dataloader.DataLoader
-        Data loader built as configured.
+    :param config: path to the config file
+    :return: instance of torch.utils.data.dataset.DataLoader
     """
     config = yaml2dict(config)
     datasets = PrimordiaDatasets.from_config(config)
@@ -143,16 +133,31 @@ def get_primordia_loaders(config):
     return loader
 
 
-def get_raw_volume(config_file):
-    config = yaml2dict(config_file)
-
-    volume_config = config.get('volume_config')
-    slicing_config = config.get('slicing_config')
-    assert len(config.get('dataset_names')) == 1
-    name = config.get('dataset_names')[0]
+def _get_raw_volume(name, volume_config, slicing_config):
+    assert isinstance(volume_config, dict)
+    assert isinstance(slicing_config, dict)
+    assert 'raw' in volume_config
 
     raw_volume_kwargs = dict(volume_config.get('raw'))
     raw_volume_kwargs.update(slicing_config)
 
-    raw_volume = RawVolume(name=name, return_index_spec=True, **raw_volume_kwargs)
+    raw_volume = RawVolume(name=name, return_index_spec=True,
+                           **raw_volume_kwargs)
     return raw_volume
+
+
+def get_raw_volumes(config_file):
+    """
+    Gets list of Primordia datasets given the path to a configuration file
+    :param config_file: path to config file
+    :return: list of torch.utils.data.dataset.Dataset
+    """
+    config = yaml2dict(config_file)
+
+    volume_config = config.get('volume_config')
+    slicing_config = config.get('slicing_config')
+    names = config.get('dataset_names')
+
+    raw_volumes = [_get_raw_volume(name, volume_config, slicing_config)
+                   for name in names]
+    return raw_volumes
