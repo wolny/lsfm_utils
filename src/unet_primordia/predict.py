@@ -107,6 +107,7 @@ def main():
     model_dir = args.model_dir
     config_path = args.config_path
 
+    logger.info('Loading datasets...')
     raw_volumes = get_raw_volumes(config_path)
 
     model = load_model(model_dir)
