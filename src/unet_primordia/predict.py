@@ -83,6 +83,7 @@ def save_predictions(probability_maps, output_file, average_channels=True):
             for i, c in enumerate(range(0, out_channels, 3)):
                 avg_probs = np.mean(p_maps[c:c + 3, ...], axis=0)
                 result[f'probability_maps{i}'] = avg_probs
+            return result
 
     with h5py.File(output_file, "w") as output_h5:
         for k, v in _dataset_dict(probability_maps, average_channels).items():
