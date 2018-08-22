@@ -143,7 +143,7 @@ def get_primordia_loaders(config):
     return loader
 
 
-def get_test_dataset(config_file):
+def get_raw_volume(config_file):
     config = yaml2dict(config_file)
 
     volume_config = config.get('volume_config')
