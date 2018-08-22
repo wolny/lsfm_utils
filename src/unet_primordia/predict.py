@@ -105,9 +105,9 @@ def main():
     args = parser.parse_args()
 
     model_dir = args.model_dir
-    test_config = args.test_config
+    config_path = args.config_path
 
-    raw_volumes = get_raw_volumes(test_config)
+    raw_volumes = get_raw_volumes(config_path)
 
     model = load_model(model_dir)
 
