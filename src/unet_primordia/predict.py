@@ -55,8 +55,8 @@ def predict(model, dataset, device):
             probs = model(patch)
             # convert to numpy array
             probs = probs.squeeze().cpu().numpy()
-            # write to the output prediction array
-            probability_maps[index] = probs
+            # accumulate probs to the output prediction array
+            probability_maps[index] += probs
             # count visits
             normalization_mask[index] += 1
 
