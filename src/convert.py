@@ -11,7 +11,7 @@ def convert_files(data_dir):
         filename = os.fsdecode(file)
         segm_path = os.path.join(data_dir, filename)
         with h5py.File(segm_path, 'r+') as segm_h5:
-            print(f'Converting {segm_path}')
+            print('Converting ', segm_path)
             dataset = numpy.squeeze(segm_h5['exported_data'])
             del segm_h5['exported_data']
             segm_h5.create_dataset(
