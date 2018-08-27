@@ -24,7 +24,7 @@ def get_raw_and_segmented_time_points(raw_data_dir, segmented_data_dir):
 def merge_raw_with_segmented(raw_data_path, segmented_data_path, output_dir):
     with h5py.File(raw_data_path, "r") as raw_data:
         with h5py.File(segmented_data_path, "r") as segmented_data:
-            raw_filename = os.path.split(raw_data)[1]
+            raw_filename = os.path.split(raw_data_path)[1]
             raw_filename = os.path.splitext(raw_filename)[0]
             with h5py.File(
                     os.path.join(output_dir, raw_filename + '_raw_and_seg.h5'),
