@@ -34,9 +34,7 @@ def merge_raw_with_segmented(raw_data_path, segmented_file_path):
             raw_data["channel_s00"].attrs["resolution"] = (0.25, 0.165, 0.165)
 
             # get segmented stack and reshape if necessary
-            exported_data = segmented_file["exported_data"]
-            if exported_data.ndim == 4:
-                exported_data = exported_data[..., 0]
+            exported_data = numpy.squeeze(segmented_file["exported_data"])
 
             # create labels in the raw data file
             if "/volumes/labels/" not in raw_data:
