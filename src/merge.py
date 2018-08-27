@@ -30,7 +30,7 @@ def merge_raw_with_segmented(raw_data_path, segmented_data_path, output_dir):
                     os.path.join(output_dir, raw_filename + '_raw_and_seg.h5'),
                     'w') as output_h5:
                 raw_dataset = raw_data['channel_s00']
-                segmented_dataset = segmented_data['exported_data']
+                segmented_dataset = numpy.squeeze(segmented_data['exported_data'])
                 raw_and_segmented = numpy.stack(
                     [raw_dataset, segmented_dataset])
                 output_h5.create_dataset(
