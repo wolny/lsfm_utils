@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 
 class UNet3D(nn.Module):
@@ -9,50 +10,72 @@ class UNet3D(nn.Module):
         <https://arxiv.org/pdf/1606.06650.pdf>`
     Args:
         in_channels (int): number of input channels
-        out_channels (int): number of output segmentation masks
+        out_channels (int): number of output segmentation masks;
+            Note that that the of out_channels might correspond to either
+            different semantic classes or to different binary segmentation mask.
+            It's up to the user of the class to interpret the out_channels and
+            use the proper loss criterion during training (i.e. CrossEntropyLoss
+            or BCELoss respectively)
         interpolate (bool): if True use F.interpolate for upsampling otherwise
             use ConvTranspose3d
+        final_sigmoid (bool): if True apply element-wise torch.sigmoid after the
+            final 1x1x1 convolution; set to True if nn.BCELoss is to be used
+            to train the model
     """
 
-    def __init__(self, in_channels, out_channels, interpolate=True):
+    def __init__(self, in_channels, out_channels, interpolate=True,
+                 final_sigmoid=True):
         super(UNet3D, self).__init__()
         self.in_channels = in_channels
         self.out_channels = out_channels
 
         # encoder path consist of 4 subsequent Encoder modules
         # the number of features maps is the same as in the paper
-        self.encoders = [
-            Encoder(in_channels, 64),
+        self.encoders = nn.ModuleList([
+            Encoder(in_channels, 64, is_max_pool=False),
             Encoder(64, 128),
             Encoder(128, 256),
             Encoder(256, 512)
-        ]
+        ])
 
-        self.decoders = [
+        self.decoders = nn.ModuleList([
             Decoder(256 + 512, 256, interpolate),
             Decoder(128 + 256, 128, interpolate),
             Decoder(64 + 128, 64, interpolate)
-        ]
+        ])
 
         # in the last layer a 1×1×1 convolution reduces the number of output
         # channels to the number of labels
-        self.final_conv = nn.Conv3d(64, out_channels, 1, padding=1)
+        self.final_conv = nn.Conv3d(64, out_channels, 1)
+
+        if final_sigmoid:
+            self.final_sigmoid = nn.Sigmoid()
+        else:
+            self.final_sigmoid = None
 
     def forward(self, x):
         # encoder part
         encoders_features = []
         for encoder in self.encoders:
             x = encoder(x)
+            # reverse the encoder outputs to be aligned with the decoder
             encoders_features.insert(0, x)
 
-        # remove last encoder output from the list
-        encoders_features = encoders_features[:-1]
+        # remove the last encoder's output from the list
+        # !!remember: it's the 1st in the list
+        encoders_features = encoders_features[1:]
 
         # decoder part
         for decoder, encoder_features in zip(self.decoders, encoders_features):
+            # pass the output from the corresponding encoder and the output
+            # of the previous decoder
             x = decoder(encoder_features, x)
 
         x = self.final_conv(x)
+
+        if self.final_sigmoid is not None:
+            x = self.final_sigmoid(x)
+
         return x
 
 
@@ -150,8 +173,7 @@ class Decoder(nn.Module):
                  scale_factor=(2, 2, 2)):
         super(Decoder, self).__init__()
         if interpolate:
-            self.upsample = nn.Upsample(scale_factor=scale_factor,
-                                        mode='nearest')
+            self.upsample = None
         else:
             # make sure that the output size reverses the MaxPool3d
             # D_out = (D_in − 1) ×  stride[0] − 2 ×  padding[0] +  kernel_size[0] +  output_padding[0]
@@ -165,7 +187,12 @@ class Decoder(nn.Module):
                                       kernel_size=kernel_size)
 
     def forward(self, encoder_features, x):
-        x = self.upsample(x)
+        if self.upsample is None:
+            output_size = encoder_features.size()[2:]
+            x = F.interpolate(x, size=output_size, mode='nearest')
+        else:
+            x = self.upsample(x)
         # concatenate encoder_features (encoder path) with the upsampled input
         x = torch.cat((encoder_features, x), dim=1)
         x = self.double_conv(x)
+        return x
