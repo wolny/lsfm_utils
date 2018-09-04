@@ -1,16 +1,11 @@
 import logging
-
+import os
 import sys
 
-import os
 import torch
-import torch.nn as nn
-import torch.optim as optim
-from torch.utils.data import DataLoader, Dataset
 from tensorboardX import SummaryWriter
-from unet3d import UNet3D
-from utils import save_checkpoint, load_checkpoint, RunningAverage, \
-    ComposedLoss, MeanIoU
+
+from . import utils
 
 
 class UNet3DTrainer:
@@ -75,10 +70,9 @@ class UNet3DTrainer:
 
     @classmethod
     def from_checkpoint(cls, checkpoint_path, model, optimizer, loss_criterion,
-                        error_criterion, loaders):
-        logger = cls._get_logger()
+                        error_criterion, loaders, logger=None):
         logger.info(f"Loading checkpoint '{checkpoint_path}'...")
-        state = load_checkpoint(checkpoint_path, model, optimizer)
+        state = utils.load_checkpoint(checkpoint_path, model, optimizer)
         logger.info(
             f"Checkpoint loaded. Epoch: {state['epoch']}. Best val error: {state['best_val_error']}")
         checkpoint_dir = os.path.split(checkpoint_path)[0]
@@ -103,8 +97,8 @@ class UNet3DTrainer:
         pass
 
     def train(self, train_loader, num_epoch):
-        train_losses = RunningAverage()
-        train_errors = RunningAverage()
+        train_losses = utils.RunningAverage()
+        train_errors = utils.RunningAverage()
 
         self.model.train()
 
@@ -112,7 +106,7 @@ class UNet3DTrainer:
             self.logger.info(
                 f'Training iteration {self.num_iterations}. Batch {i}. Epoch [{num_epoch}/{self.max_num_epochs - 1}]')
 
-            input, target = input.to(device), target.to(device)
+            input, target = input.to(self.device), target.to(self.device)
 
             # forward pass
             output = self.model(input)
@@ -125,9 +119,9 @@ class UNet3DTrainer:
             train_errors.update(error.item(), input.size(0))
 
             # compute gradients and update parameters
-            optimizer.zero_grad()
+            self.optimizer.zero_grad()
             loss.backward()
-            optimizer.step()
+            self.optimizer.step()
 
             self.num_iterations += 1
 
@@ -150,15 +144,16 @@ class UNet3DTrainer:
     def validate(self, val_loader):
         self.logger.info('Validating...')
 
-        val_losses = RunningAverage()
-        val_errors = RunningAverage()
+        val_losses = utils.RunningAverage()
+        val_errors = utils.RunningAverage()
 
         self.model.eval()
         try:
             with torch.no_grad():
                 for i, (input, target) in enumerate(val_loader):
                     self.logger.info(f'Validation iteration {i}')
-                    input, target = input.to(device), target.to(device)
+                    input, target = input.to(self.device), target.to(
+                        self.device)
 
                     # forward pass
                     output = self.model(input)
@@ -168,6 +163,10 @@ class UNet3DTrainer:
 
                     val_losses.update(loss.item(), input.size(0))
                     val_errors.update(error.item(), input.size(0))
+
+                    if self.validate_iters is not None and i % self.validate_iters == 0:
+                        # stop validation
+                        break
 
                 self._log_stats('val', val_losses.avg, val_errors.avg)
                 self.logger.info(f'Validation finished. Error {val_errors.avg}')
@@ -184,7 +183,7 @@ class UNet3DTrainer:
         return is_best
 
     def _save_checkpoint(self, is_best, num_epoch):
-        save_checkpoint({
+        utils.save_checkpoint({
             'epoch': num_epoch + 1,
             'num_iterations': self.num_iterations,
             'model_state_dict': self.model.state_dict(),
@@ -224,74 +223,3 @@ class UNet3DTrainer:
             self.writer.add_histogram(name + '/grad',
                                       value.grad.data.cpu().numpy(),
                                       self.num_iterations)
-
-
-def load_model():
-    in_channels = 1
-    out_channels = 1
-    # use F.interpolate for upsampling
-    interpolate = True
-    return UNet3D(in_channels, out_channels, interpolate)
-
-
-class Random3DDataset(Dataset):
-    def __init__(self, N, size, out_channels):
-        raw_dims = (N, 1) + size
-        labels_dims = (N, out_channels) + size
-        self.raw = torch.randn(raw_dims)
-        self.labels = torch.empty(labels_dims, dtype=torch.float).random_(2)
-
-    def __len__(self):
-        return self.raw.size(0)
-
-    def __getitem__(self, idx):
-        return self.raw[idx], self.labels[idx]
-
-
-def get_loaders():
-    # when using ConvTranspose3d, make sure that dimensions can be divided by 16
-    train_dataset = Random3DDataset(4, (32, 64, 64), 1)
-    val_dataset = Random3DDataset(1, (32, 64, 64), 1)
-
-    return {
-        # tensorboard logger
-
-        'train': DataLoader(train_dataset, batch_size=1,
-                            shuffle=True),
-        'val': DataLoader(val_dataset, batch_size=1,
-                          shuffle=True)
-    }
-
-
-if __name__ == '__main__':
-    model = load_model()
-    # get device to train on
-    device = torch.device("cuda:0" if torch.cuda.is_available() else 'cpu')
-
-    # Treat different output channels as different segmentation mask
-    # Ground truth data should have the same number of channels in this case
-    out_channels_as_classes = False
-    # Create criterion
-    if out_channels_as_classes:
-        loss_criterion = nn.CrossEntropyLoss()
-    else:
-        loss_criterion = ComposedLoss(nn.Sigmoid(), nn.BCELoss())
-
-    error_criterion = MeanIoU()
-
-    loaders = get_loaders()
-
-    learning_rate = 1e-4
-    weight_decay = 0.0005
-    optimizer = optim.Adam(model.parameters(), lr=learning_rate,
-                           weight_decay=weight_decay)
-
-    trainer = UNet3DTrainer(model, optimizer, loss_criterion, error_criterion,
-                            device, loaders, './checkpoints', log_after_iters=8,
-                            validate_after_iters=8)
-
-    # trainer = UNet3DTrainer.from_checkpoint(
-    #     './checkpoints/last_checkpoint.pytorch',
-    #     model, optimizer, loss_criterion, error_criterion, loaders)
-
-    trainer.fit()
