@@ -1,7 +1,7 @@
 from torch.utils.data.dataloader import DataLoader
 
 from inferno.io.core import ZipReject, Concatenate
-from inferno.io.transform import Compose
+from inferno.io.transform import Compose, Transform
 from inferno.io.transform.generic import AsTorchBatch
 from inferno.io.transform.image import RandomRotate, ElasticTransform
 from inferno.io.transform.volume import RandomFlip3D, VolumeAsymmetricCrop
@@ -10,6 +10,14 @@ from neurofire.datasets.cremi.loaders import RawVolume
 from neurofire.datasets.cremi.loaders import SegmentationVolume
 from neurofire.transform.affinities import affinity_config_to_transform
 from neurofire.transform.volume import RejectNonZeroThreshold
+
+
+class InvertAffinities(Transform):
+    def __init__(self, **super_kwargs):
+        super(InvertAffinities, self).__init__(**super_kwargs)
+
+    def volume_function(self, tensor):
+        return 1. - tensor
 
 
 class PrimordiaDataset(ZipReject):
@@ -70,12 +78,7 @@ class PrimordiaDataset(ZipReject):
             transforms.add(affinity_config_to_transform(apply_to=[1],
                                                         **self.affinity_config))
 
-        # Next: crop invalid affinity labels and elastic augment reflection padding assymetrically
-        crop_config = self.master_config.get('crop_after_target', {})
-        if crop_config:
-            # One might need to crop after elastic transform to avoid edge artefacts of affinity
-            # computation being warped into the FOV.
-            transforms.add(VolumeAsymmetricCrop(**crop_config))
+        transforms.add(InvertAffinities(apply_to=[1]))
 
         return transforms
 
