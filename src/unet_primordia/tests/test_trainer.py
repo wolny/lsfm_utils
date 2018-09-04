@@ -58,7 +58,7 @@ class TestUNet3DTrainer(object):
 
     def _load_model(self, out_channels_as_classes):
         in_channels = 1
-        out_channels = 1
+        out_channels = 2
         # use F.interpolate for upsampling
         interpolate = True
         return UNet3D(in_channels, out_channels, interpolate,
@@ -66,8 +66,8 @@ class TestUNet3DTrainer(object):
 
     def _get_loaders(self):
         # when using ConvTranspose3d, make sure that dimensions can be divided by 16
-        train_dataset = Random3DDataset(4, (32, 64, 64), 1)
-        val_dataset = Random3DDataset(1, (32, 64, 64), 1)
+        train_dataset = Random3DDataset(4, (32, 64, 64), 2)
+        val_dataset = Random3DDataset(1, (32, 64, 64), 2)
 
         return {
             # tensorboard logger

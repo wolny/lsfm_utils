@@ -3,6 +3,7 @@ import os
 import sys
 
 import torch
+import numpy as np
 from tensorboardX import SummaryWriter
 
 from . import utils
@@ -129,7 +130,7 @@ class UNet3DTrainer:
                 # log stats, params and images
                 self._log_stats('train', train_losses.avg, train_errors.avg)
                 self._log_params()
-                # TODO: images
+                self._log_images(input, target, output)
 
             if self.num_iterations % self.validate_after_iters == 0:
                 # evaluate on validation set
@@ -223,3 +224,31 @@ class UNet3DTrainer:
             self.writer.add_histogram(name + '/grad',
                                       value.grad.data.cpu().numpy(),
                                       self.num_iterations)
+
+    def _log_images(self, input, target, prediction):
+        sources = {
+            'inputs': input.data.cpu().numpy(),
+            'targets': target.data.cpu().numpy(),
+            'predictions': prediction.data.cpu().numpy()
+        }
+        for name, batch in sources.items():
+            for tag, image in self._images_from_batch(name, batch):
+                self.writer.add_image(tag, image, self.num_iterations)
+
+    def _images_from_batch(self, name, batch):
+        tag_template = '{}/batch_{}/channel_{}/slice_{}'
+
+        slice_idx = batch.shape[2] // 2  # get the middle slice
+        tagged_images = []
+        for batch_idx in range(batch.shape[0]):
+            for channel_idx in range(batch.shape[1]):
+                tag = tag_template.format(name, batch_idx, channel_idx,
+                                          slice_idx)
+                img = batch[batch_idx, channel_idx, slice_idx, ...]
+                tagged_images.append((tag, (self._normalize_img(img))))
+
+        return tagged_images
+
+    @staticmethod
+    def _normalize_img(img):
+        return (img - np.min(img)) / np.ptp(img)
