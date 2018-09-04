@@ -128,6 +128,8 @@ class UNet3DTrainer:
 
             if self.num_iterations % self.log_after_iters == 0:
                 # log stats, params and images
+                self.logger.info(
+                    f'Training stats. Loss {train_losses.avg}. Error {train_errors.avg}')
                 self._log_stats('train', train_losses.avg, train_errors.avg)
                 self._log_params()
                 self._log_images(input, target, output)
@@ -170,7 +172,8 @@ class UNet3DTrainer:
                         break
 
                 self._log_stats('val', val_losses.avg, val_errors.avg)
-                self.logger.info(f'Validation finished. Error {val_errors.avg}')
+                self.logger.info(
+                    f'Validation finished. Loss {val_losses.avg}. Error {val_errors.avg}')
                 return val_errors.avg
         finally:
             self.model.train()

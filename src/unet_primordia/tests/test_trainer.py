@@ -1,16 +1,15 @@
 import logging
-
+import os
 import sys
 
-import os
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
 from unet3d.model import UNet3D
 from unet3d.trainer import UNet3DTrainer
-from unet3d.utils import MeanIoU
-from .random_dataset import Random3DDataset
+from unet3d.utils import DiceCoefficient
+from unet3d.utils import Random3DDataset
 
 
 class TestUNet3DTrainer(object):
@@ -30,7 +29,7 @@ class TestUNet3DTrainer(object):
             else:
                 loss_criterion = nn.BCELoss()
 
-            error_criterion = MeanIoU()
+            error_criterion = DiceCoefficient()
 
             loaders = self._get_loaders()
 
@@ -70,8 +69,6 @@ class TestUNet3DTrainer(object):
         val_dataset = Random3DDataset(1, (32, 64, 64), 2)
 
         return {
-            # tensorboard logger
-
             'train': DataLoader(train_dataset, batch_size=1,
                                 shuffle=True),
             'val': DataLoader(val_dataset, batch_size=1,

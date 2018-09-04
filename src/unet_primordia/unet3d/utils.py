@@ -3,6 +3,7 @@ import shutil
 
 import torch
 import torch.nn as nn
+from torch.utils.data import Dataset
 
 
 def save_checkpoint(state, is_best, checkpoint_dir, logger=None):
@@ -102,10 +103,41 @@ class ComposedLoss(nn.Module):
         return self.loss(self.input_func(input), target)
 
 
-class MeanIoU:
-    def __init__(self, num_of_classes=2):
-        self.num_of_classes = num_of_classes
+class Random3DDataset(Dataset):
+    """Generates random 3D dataset for testing and demonstration purposes.
+    """
 
-    def __call__(self, prediction, target):
-        # TODO: implement
-        return torch.rand(1)
+    def __init__(self, N, size, out_channels):
+        raw_dims = (N, 1) + size
+        labels_dims = (N, out_channels) + size
+        self.raw = torch.randn(raw_dims)
+        self.labels = torch.empty(labels_dims, dtype=torch.float).random_(2)
+
+    def __len__(self):
+        return self.raw.size(0)
+
+    def __getitem__(self, idx):
+        return self.raw[idx], self.labels[idx]
+
+
+class DiceCoefficient(nn.Module):
+    """Compute Dice Coefficient averaging across batch axis
+    """
+
+    def __init__(self, epsilon=1e-5):
+        super(DiceCoefficient, self).__init__()
+        self.epsilon = epsilon
+
+    def forward(self, input, target):
+        assert input.size() == target.size()
+        if input.dim() == 5:
+            per_sample_coeffs = [self._dice_coeff(input[i], target[i]) for i in
+                                 range(input.size()[0])]
+            return torch.Tensor(per_sample_coeffs).mean()
+        else:
+            return self._dice_coeff(input, target)
+
+    def _dice_coeff(self, x, y):
+        inter_card = (x * y).sum()
+        sum_of_cards = x.sum() + y.sum()
+        return (2. * inter_card + self.epsilon) / (sum_of_cards + self.epsilon)
