@@ -40,6 +40,8 @@ def _arg_parser():
                         help='how many iterations between validations')
     parser.add_argument('--log-after-iters', default=100, type=int,
                         help='how many iterations between tensorboard logging')
+    parser.add_argument('--resume', default='', type=str,
+                        help='path to latest checkpoint (default: none)')
     return parser
 
 
@@ -121,12 +123,17 @@ def main():
     # Create the optimizer
     optimizer = _create_optimizer(args, model)
 
-    trainer = UNet3DTrainer(model, optimizer, loss_criterion,
-                            error_criterion,
-                            device, loaders, args.checkpoint_dir,
-                            validate_after_iters=args.validate_after_iters,
-                            log_after_iters=args.log_after_iters,
-                            logger=logger)
+    if args.resume:
+        trainer = UNet3DTrainer.from_checkpoint(args.resume, model, optimizer,
+                                      loss_criterion, error_criterion, loaders,
+                                      logger=logger)
+    else:
+        trainer = UNet3DTrainer(model, optimizer, loss_criterion,
+                                error_criterion,
+                                device, loaders, args.checkpoint_dir,
+                                validate_after_iters=args.validate_after_iters,
+                                log_after_iters=args.log_after_iters,
+                                logger=logger)
 
     trainer.fit()
 

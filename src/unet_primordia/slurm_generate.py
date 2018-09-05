@@ -49,7 +49,7 @@ def generate_slurm_script(hyperparams,
 #SBATCH -t 10:00:00                     
 #SBATCH -o {}			        
 #SBATCH -e {}			        
-#SBATCH --mail-type=END,FAIL		    
+#SBATCH --mail-type=FAIL,BEGIN,END		    
 #SBATCH --mail-user=adrian.wolny@embl.de
 #SBATCH -p gpu				            
 #SBATCH -C gpu=1080Ti			        
