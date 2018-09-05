@@ -57,6 +57,8 @@ def generate_slurm_script(hyperparams,
 
 module load cuDNN
 
+export PYTHONPATH="/g/kreshuk/wolny/workspace/inferno:/g/kreshuk/wolny/workspace/neurofire:$PYTHONPATH"
+
 {} {}        
     '''
 
