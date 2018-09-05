@@ -74,7 +74,7 @@ module load cuDNN
         batchnorm = ''
     lr = hyperparams[2]
     wd = hyperparams[3]
-    args = f'--config-dir {config_dir} --checkpoint-dir {project_dir} --validate-after-iters 100 --log-after-iters 100 --out-channels 6 --learning-rate {lr} --weight-decay {wd} {interpolate} {batchnorm}'
+    args = f'--config-dir {config_dir} --checkpoint-dir {project_dir} --validate-after-iters 100 --log-after-iters 100 --out-channels 9 --learning-rate {lr} --weight-decay {wd} {interpolate} {batchnorm}'
 
     script_name = f'slurm_{checkpoint}.sh'
     return script_name, slurm_template.format(outfile, errfile, train_script_path, args)
