@@ -38,7 +38,7 @@ def hyperparams_to_name(hp):
 def generate_slurm_script(hyperparams,
                           prefix_dir='/g/kreshuk/wolny/workspace/models/3dunet',
                           train_script_path='/g/kreshuk/wolny/workspace/lsfm_utils/src/unet_primordia/train_unet3d.py',
-                          config_dir='/home/wolny/workspace/models/3dunet/config'):
+                          config_dir='/g/kreshuk/wolny/workspace/models/3dunet/config'):
     slurm_template = \
     '''#!/bin/bash
 
