@@ -39,8 +39,7 @@ def generate_slurm_script(hyperparams,
                           train_script_path='/g/kreshuk/wolny/workspace/lsfm_utils/src/unet_primordia/train_unet3d.py',
                           config_dir='/home/wolny/workspace/models/3dunet/config'):
     slurm_template = \
-    '''
-#!/bin/bash
+    '''#!/bin/bash
 
 #SBATCH -A kreshuk                              
 #SBATCH -N 1				            
