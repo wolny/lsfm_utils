@@ -1,3 +1,5 @@
+#!/g/kreshuk/wolny/miniconda3/envs/pytorch041/bin/python3
+
 import argparse
 import logging
 
@@ -25,6 +27,9 @@ def _arg_parser():
     parser.add_argument('--interpolate',
                         help='use F.interpolate instead of ConvTranspose3d',
                         action='store_true')
+    parser.add_argument('--batchnorm',
+                        help='use BatchNorm3d before nonlinearity',
+                        action='store_true')
     parser.add_argument('--epochs', default=100, type=int,
                         help='max number of epochs')
     parser.add_argument('--learning-rate', default=0.0001, type=float,
@@ -39,8 +44,9 @@ def _arg_parser():
 
 
 def _create_model(in_channels, out_channels, interpolate=False,
-                  final_sigmoid=True):
-    return UNet3D(in_channels, out_channels, interpolate, final_sigmoid)
+                  final_sigmoid=True, batch_norm=True):
+    return UNet3D(in_channels, out_channels, interpolate, final_sigmoid,
+                  batch_norm)
 
 
 def _get_loaders(config_dir, logger):
@@ -103,7 +109,8 @@ def main():
     final_sigmoid = not out_channels_as_classes
     model = _create_model(args.in_channels, args.out_channels,
                           interpolate=args.interpolate,
-                          final_sigmoid=final_sigmoid)
+                          final_sigmoid=final_sigmoid,
+                          batch_norm=args.batchnorm)
 
     # Create loss criterion and error metric
     error_criterion, loss_criterion = _create_criterions(final_sigmoid)

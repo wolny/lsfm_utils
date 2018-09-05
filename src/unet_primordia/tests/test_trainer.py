@@ -22,7 +22,8 @@ class TestUNet3DTrainer(object):
             # Treat different output channels as different segmentation mask
             # Ground truth data should have the same number of channels in this case
             out_channels_as_classes = False
-            model = self._load_model(out_channels_as_classes)
+            batch_norm = True
+            model = self._load_model(not out_channels_as_classes, batch_norm)
             # Create criterion
             if out_channels_as_classes:
                 loss_criterion = nn.CrossEntropyLoss()
@@ -55,13 +56,13 @@ class TestUNet3DTrainer(object):
                 model, optimizer, loss_criterion, error_criterion, loaders,
                 logger=logger)
 
-    def _load_model(self, out_channels_as_classes):
+    def _load_model(self, final_sigmoid, batch_norm):
         in_channels = 1
         out_channels = 2
         # use F.interpolate for upsampling
         interpolate = True
         return UNet3D(in_channels, out_channels, interpolate,
-                      not out_channels_as_classes)
+                      final_sigmoid, batch_norm)
 
     def _get_loaders(self):
         # when using ConvTranspose3d, make sure that dimensions can be divided by 16
@@ -77,7 +78,7 @@ class TestUNet3DTrainer(object):
 
     def _get_logger(self):
         logger = logging.getLogger('UNet3DTrainer')
-        logger.setLevel(logging.INFO)
+        logger.setLevel(logging.DEBUG)
         # Logging to console
         stream_handler = logging.StreamHandler(sys.stdout)
         formatter = logging.Formatter(
