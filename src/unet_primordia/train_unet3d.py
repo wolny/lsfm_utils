@@ -1,19 +1,16 @@
 #!/g/kreshuk/wolny/miniconda3/envs/pytorch041/bin/python3
 
 import argparse
-import logging
-
-import sys
-
 import os
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from primordia_loader.loader import get_primordia_loaders
 from unet3d.model import UNet3D
 from unet3d.trainer import UNet3DTrainer
 from unet3d.utils import DiceCoefficient
-
-from primordia_loader.loader import get_primordia_loaders
+from unet3d.utils import get_logger
 
 
 def _arg_parser():
@@ -25,11 +22,9 @@ def _arg_parser():
     parser.add_argument('--out-channels', default=6, type=int,
                         help='number of output channels')
     parser.add_argument('--interpolate',
-                        help='use F.interpolate instead of ConvTranspose3d',
-                        action='store_true')
+                        help='use F.interpolate instead of ConvTranspose3d')
     parser.add_argument('--batchnorm',
-                        help='use BatchNorm3d before nonlinearity',
-                        action='store_true')
+                        help='use BatchNorm3d before nonlinearity')
     parser.add_argument('--epochs', default=100, type=int,
                         help='max number of epochs')
     parser.add_argument('--learning-rate', default=0.0001, type=float,
@@ -83,22 +78,9 @@ def _create_optimizer(args, model):
     return optimizer
 
 
-def _get_logger():
-    logger = logging.getLogger('UNet3DTrainer')
-    logger.setLevel(logging.INFO)
-    # Logging to console
-    stream_handler = logging.StreamHandler(sys.stdout)
-    formatter = logging.Formatter(
-        '%(asctime)s [%(threadName)s] %(levelname)s %(name)s - %(message)s')
-    stream_handler.setFormatter(formatter)
-    logger.addHandler(stream_handler)
-
-    return logger
-
-
 def main():
     parser = _arg_parser()
-    logger = _get_logger()
+    logger = get_logger('UNet3DTrainer')
     # Get device to train on
     device = torch.device("cuda:0" if torch.cuda.is_available() else 'cpu')
 
@@ -113,6 +95,11 @@ def main():
                           interpolate=args.interpolate,
                           final_sigmoid=final_sigmoid,
                           batch_norm=args.batchnorm)
+
+    # Log the number of learnable parameters
+    model_parameters = filter(lambda p: p.requires_grad, model.parameters())
+    params = sum([np.prod(p.size()) for p in model_parameters])
+    logger.info(f'Number of learnable params {params}')
 
     # Create loss criterion and error metric
     error_criterion, loss_criterion = _create_criterions(final_sigmoid)

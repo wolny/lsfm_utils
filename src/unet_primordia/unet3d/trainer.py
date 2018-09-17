@@ -1,9 +1,8 @@
 import logging
 import os
-import sys
 
-import torch
 import numpy as np
+import torch
 from tensorboardX import SummaryWriter
 
 from . import utils
@@ -39,7 +38,7 @@ class UNet3DTrainer:
                  validate_iters=None, best_val_error=float('-inf'),
                  num_iterations=0, num_epoch=0, logger=None):
         if logger is None:
-            self.logger = self._get_logger()
+            self.logger = utils.get_logger('UNet3DTrainer', level=logging.DEBUG)
         else:
             self.logger = logger
 
@@ -196,19 +195,6 @@ class UNet3DTrainer:
             'device': str(self.device)
         }, is_best, checkpoint_dir=self.checkpoint_dir,
             logger=self.logger)
-
-    @staticmethod
-    def _get_logger():
-        logger = logging.getLogger('UNet3DTrainer')
-        logger.setLevel(logging.DEBUG)
-        # Logging to console
-        stream_handler = logging.StreamHandler(sys.stdout)
-        formatter = logging.Formatter(
-            '%(asctime)s [%(threadName)s] %(levelname)s %(name)s - %(message)s')
-        stream_handler.setFormatter(formatter)
-        logger.addHandler(stream_handler)
-
-        return logger
 
     def _log_stats(self, phase, loss_avg, error_avg):
         tag_value = {

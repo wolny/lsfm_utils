@@ -10,6 +10,7 @@ from unet3d.model import UNet3D
 from unet3d.trainer import UNet3DTrainer
 from unet3d.utils import DiceCoefficient
 from unet3d.utils import Random3DDataset
+from unet3d.utils import get_logger
 
 
 class TestUNet3DTrainer(object):
@@ -39,7 +40,7 @@ class TestUNet3DTrainer(object):
             optimizer = optim.Adam(model.parameters(), lr=learning_rate,
                                    weight_decay=weight_decay)
 
-            logger = self._get_logger()
+            logger = get_logger('UNet3DTrainer')
             trainer = UNet3DTrainer(model, optimizer, loss_criterion,
                                     error_criterion,
                                     device, loaders, tmpdir,
@@ -70,20 +71,6 @@ class TestUNet3DTrainer(object):
         val_dataset = Random3DDataset(1, (32, 64, 64), 2)
 
         return {
-            'train': DataLoader(train_dataset, batch_size=1,
-                                shuffle=True),
-            'val': DataLoader(val_dataset, batch_size=1,
-                              shuffle=True)
+            'train': DataLoader(train_dataset, batch_size=1, shuffle=True),
+            'val': DataLoader(val_dataset, batch_size=1, shuffle=True)
         }
-
-    def _get_logger(self):
-        logger = logging.getLogger('UNet3DTrainer')
-        logger.setLevel(logging.DEBUG)
-        # Logging to console
-        stream_handler = logging.StreamHandler(sys.stdout)
-        formatter = logging.Formatter(
-            '%(asctime)s [%(threadName)s] %(levelname)s %(name)s - %(message)s')
-        stream_handler.setFormatter(formatter)
-        logger.addHandler(stream_handler)
-
-        return logger

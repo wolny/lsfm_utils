@@ -1,6 +1,8 @@
+import logging
 import os
 import shutil
 
+import sys
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset
@@ -57,6 +59,19 @@ def load_checkpoint(checkpoint_path, model, optimizer=None):
         optimizer.load_state_dict(state['optimizer_state_dict'])
 
     return state
+
+
+def get_logger(name, level=logging.INFO):
+    logger = logging.getLogger(name)
+    logger.setLevel(level)
+    # Logging to console
+    stream_handler = logging.StreamHandler(sys.stdout)
+    formatter = logging.Formatter(
+        '%(asctime)s [%(threadName)s] %(levelname)s %(name)s - %(message)s')
+    stream_handler.setFormatter(formatter)
+    logger.addHandler(stream_handler)
+
+    return logger
 
 
 class RunningAverage:
