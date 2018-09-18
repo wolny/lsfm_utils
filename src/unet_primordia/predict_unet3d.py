@@ -114,17 +114,19 @@ def main():
         return volume_file + '_probabilities' + volume_ext
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model_path', type=str, help='path to the model')
-    parser.add_argument('--config_path', type=str,
+    parser.add_argument('--model-path', type=str, help='path to the model')
+    parser.add_argument('--config-path', type=str,
                         help='path to the dataset config')
     parser.add_argument('--in-channels', default=1, type=int,
                         help='number of input channels')
     parser.add_argument('--out-channels', default=6, type=int,
                         help='number of output channels')
     parser.add_argument('--interpolate',
-                        help='use F.interpolate instead of ConvTranspose3d')
+                        help='use F.interpolate instead of ConvTranspose3d',
+                        action='store_true')
     parser.add_argument('--batchnorm',
-                        help='use BatchNorm3d before nonlinearity')
+                        help='use BatchNorm3d before nonlinearity',
+                        action='store_true')
 
     args = parser.parse_args()
 
