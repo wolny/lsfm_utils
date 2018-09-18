@@ -162,3 +162,27 @@ class DiceCoefficient(nn.Module):
         inter_card = (x * y).sum()
         sum_of_cards = x.sum() + y.sum()
         return (2. * inter_card + self.epsilon) / (sum_of_cards + self.epsilon)
+
+
+def find_maximum_patch_size(model, device):
+    """Tries to find the biggest patch size that can be send to GPU for inference
+    without throwing CUDA out of memory"""
+
+    in_channels = model.in_channels
+
+    patch_shapes = [(64, 128, 128), (96, 128, 128),
+                    (64, 160, 160), (96, 160, 160),
+                    (64, 192, 192), (96, 192, 192)]
+
+    for shape in patch_shapes:
+        # generate random patch of a given size
+        patch = np.random.randn(*shape).astype('float32')
+
+        patch = torch \
+            .from_numpy(patch) \
+            .view((1, in_channels) + patch.shape) \
+            .to(device)
+
+        logger.info(f"Current patch size: {shape}")
+        model(patch)
+
