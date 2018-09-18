@@ -46,7 +46,7 @@ class UNet3DTrainer:
         # in our case evaluate on the whole validation set (validate_iters=None)
         # in order to get comparable results, since the ground truth is not ideal
 
-        self.logger.debug(f"Sending the model to '{device}'")
+        self.logger.info(f"Sending the model to '{device}'")
         self.model = model.to(device)
         self.logger.debug(model)
 
