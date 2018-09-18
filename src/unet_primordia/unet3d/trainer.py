@@ -74,7 +74,7 @@ class UNet3DTrainer:
         logger.info(f"Loading checkpoint '{checkpoint_path}'...")
         state = utils.load_checkpoint(checkpoint_path, model, optimizer)
         logger.info(
-            f"Checkpoint loaded. Epoch: {state['epoch']}. Best val error: {state['best_val_error']}")
+            f"Checkpoint loaded. Epoch: {state['epoch']}. Best val error: {state['best_val_error']}. Num_iterations: {state['num_iterations']}")
         checkpoint_dir = os.path.split(checkpoint_path)[0]
         return cls(model, optimizer, loss_criterion, error_criterion,
                    torch.device(state['device']), loaders,
