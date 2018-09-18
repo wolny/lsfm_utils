@@ -1,8 +1,9 @@
 import logging
 import os
 import shutil
-
 import sys
+
+import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset
@@ -72,6 +73,11 @@ def get_logger(name, level=logging.INFO):
     logger.addHandler(stream_handler)
 
     return logger
+
+
+def get_number_of_learnable_parameters(model):
+    model_parameters = filter(lambda p: p.requires_grad, model.parameters())
+    return sum([np.prod(p.size()) for p in model_parameters])
 
 
 class RunningAverage:

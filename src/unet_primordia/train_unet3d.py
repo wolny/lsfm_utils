@@ -11,6 +11,7 @@ from unet3d.model import UNet3D
 from unet3d.trainer import UNet3DTrainer
 from unet3d.utils import DiceCoefficient
 from unet3d.utils import get_logger
+from unet3d.utils import get_number_of_learnable_parameters
 
 
 def _arg_parser():
@@ -99,9 +100,8 @@ def main():
                           batch_norm=args.batchnorm)
 
     # Log the number of learnable parameters
-    model_parameters = filter(lambda p: p.requires_grad, model.parameters())
-    params = sum([np.prod(p.size()) for p in model_parameters])
-    logger.info(f'Number of learnable params {params}')
+    logger.info(
+        f'Number of learnable params {get_number_of_learnable_parameters(model)}')
 
     # Create loss criterion and error metric
     error_criterion, loss_criterion = _create_criterions(final_sigmoid)
@@ -114,8 +114,9 @@ def main():
 
     if args.resume:
         trainer = UNet3DTrainer.from_checkpoint(args.resume, model, optimizer,
-                                      loss_criterion, error_criterion, loaders,
-                                      logger=logger)
+                                                loss_criterion, error_criterion,
+                                                loaders,
+                                                logger=logger)
     else:
         trainer = UNet3DTrainer(model, optimizer, loss_criterion,
                                 error_criterion,
