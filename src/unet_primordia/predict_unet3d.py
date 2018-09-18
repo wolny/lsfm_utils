@@ -90,7 +90,7 @@ def save_predictions(probability_maps, output_file, average_all_channels=True):
 
     def _dataset_dict():
         result = {}
-        if not average_all_channels:
+        if average_all_channels:
             result['probability_maps'] = np.mean(probability_maps, axis=0)
         else:
             out_channels = probability_maps.shape[0]
