@@ -22,9 +22,11 @@ def _arg_parser():
     parser.add_argument('--out-channels', default=6, type=int,
                         help='number of output channels')
     parser.add_argument('--interpolate',
-                        help='use F.interpolate instead of ConvTranspose3d')
+                        help='use F.interpolate instead of ConvTranspose3d',
+                        action='store_true')
     parser.add_argument('--batchnorm',
-                        help='use BatchNorm3d before nonlinearity')
+                        help='use BatchNorm3d before nonlinearity',
+                        action='store_true')
     parser.add_argument('--epochs', default=100, type=int,
                         help='max number of epochs')
     parser.add_argument('--learning-rate', default=0.0001, type=float,
