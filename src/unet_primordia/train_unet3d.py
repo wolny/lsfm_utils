@@ -99,6 +99,8 @@ def main():
                           final_sigmoid=final_sigmoid,
                           batch_norm=args.batchnorm)
 
+    model = model.to(device)
+
     # Log the number of learnable parameters
     logger.info(
         f'Number of learnable params {get_number_of_learnable_parameters(model)}')
