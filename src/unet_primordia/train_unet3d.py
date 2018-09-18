@@ -113,9 +113,11 @@ def main():
     optimizer = _create_optimizer(args, model)
 
     if args.resume:
-        trainer = UNet3DTrainer.from_checkpoint(args.resume, model, optimizer,
-                                                loss_criterion, error_criterion,
-                                                loaders,
+        trainer = UNet3DTrainer.from_checkpoint(args.resume, model,
+                                                optimizer, loss_criterion,
+                                                error_criterion, loaders,
+                                                validate_after_iters=args.validate_after_iters,
+                                                log_after_iters=args.log_after_iters,
                                                 logger=logger)
     else:
         trainer = UNet3DTrainer(model, optimizer, loss_criterion,

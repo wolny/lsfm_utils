@@ -70,7 +70,9 @@ class UNet3DTrainer:
 
     @classmethod
     def from_checkpoint(cls, checkpoint_path, model, optimizer, loss_criterion,
-                        error_criterion, loaders, logger=None):
+                        error_criterion, loaders,
+                        validate_after_iters=100, log_after_iters=100,
+                        logger=None):
         logger.info(f"Loading checkpoint '{checkpoint_path}'...")
         state = utils.load_checkpoint(checkpoint_path, model, optimizer)
         logger.info(
@@ -80,7 +82,10 @@ class UNet3DTrainer:
                    torch.device(state['device']), loaders,
                    checkpoint_dir, best_val_error=state['best_val_error'],
                    num_iterations=state['num_iterations'],
-                   num_epoch=state['epoch'], logger=logger)
+                   num_epoch=state['epoch'],
+                   validate_after_iters=validate_after_iters,
+                   log_after_iters=log_after_iters,
+                   logger=logger)
 
     def fit(self):
         for num_epoch in range(self.num_epoch, self.max_num_epochs):
