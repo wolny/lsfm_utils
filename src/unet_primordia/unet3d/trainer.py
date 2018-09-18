@@ -31,6 +31,9 @@ class UNet3DTrainer:
         num_epoch (int): useful when loading the model from the checkpoint
     """
 
+    # number of validation steps with no improvement after which training will be stopped
+    MAX_PATIENCE = 15
+
     def __init__(self, model, optimizer, loss_criterion, error_criterion,
                  device, loaders, checkpoint_dir,
                  max_num_epochs=100, max_num_iterations=1e5,
@@ -67,6 +70,8 @@ class UNet3DTrainer:
 
         self.num_iterations = num_iterations
         self.num_epoch = num_epoch
+        # used for early stopping
+        self.patience = self.MAX_PATIENCE
 
     @classmethod
     def from_checkpoint(cls, checkpoint_path, model, optimizer, loss_criterion,
@@ -88,20 +93,29 @@ class UNet3DTrainer:
                    logger=logger)
 
     def fit(self):
-        for num_epoch in range(self.num_epoch, self.max_num_epochs):
-            self.adjust_learning_rate(num_epoch)
+        for _ in range(self.num_epoch, self.max_num_epochs):
+            self.adjust_learning_rate()
 
             # train for one epoch
-            self.train(self.loaders['train'], num_epoch)
+            self.train(self.loaders['train'])
+
+            if self.patience <= 0:
+                self.logger.info(
+                    f'Validation error did not improve for the last {self.MAX_PATIENCE} validation checks. Early stopping...')
+                break
 
             if self.max_num_iterations < self.num_iterations:
                 self.logger.info(
                     f'Maximum number of iterations {max_num_iterations} exceeded. Finishing training...')
+                break
 
-    def adjust_learning_rate(self, num_epoch):
+            self.num_epoch += 1
+
+    def adjust_learning_rate(self):
+        num_epoch = self.num_epoch
         pass
 
-    def train(self, train_loader, num_epoch):
+    def train(self, train_loader):
         train_losses = utils.RunningAverage()
         train_errors = utils.RunningAverage()
 
@@ -109,7 +123,7 @@ class UNet3DTrainer:
 
         for i, (input, target) in enumerate(train_loader):
             self.logger.info(
-                f'Training iteration {self.num_iterations}. Batch {i}. Epoch [{num_epoch}/{self.max_num_epochs - 1}]')
+                f'Training iteration {self.num_iterations}. Batch {i}. Epoch [{self.num_epoch}/{self.max_num_epochs - 1}]')
 
             input, target = input.to(self.device), target.to(self.device)
 
@@ -144,9 +158,16 @@ class UNet3DTrainer:
 
                 # remember best validation metric
                 is_best = self._is_best_val_error(val_error)
+                if is_best:
+                    self.patience = self.MAX_PATIENCE
+                else:
+                    self.patience -= 1
+                    if self.patience <= 0:
+                        # early stop the training
+                        break
 
                 # save checkpoint
-                self._save_checkpoint(is_best, num_epoch)
+                self._save_checkpoint(is_best)
 
     def validate(self, val_loader):
         self.logger.info('Validating...')
@@ -190,9 +211,9 @@ class UNet3DTrainer:
         self.best_val_error = max(val_error, self.best_val_error)
         return is_best
 
-    def _save_checkpoint(self, is_best, num_epoch):
+    def _save_checkpoint(self, is_best):
         utils.save_checkpoint({
-            'epoch': num_epoch + 1,
+            'epoch': self.num_epoch + 1,
             'num_iterations': self.num_iterations,
             'model_state_dict': self.model.state_dict(),
             'best_val_error': self.best_val_error,
