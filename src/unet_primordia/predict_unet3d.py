@@ -1,3 +1,5 @@
+#!/g/kreshuk/wolny/miniconda3/envs/pytorch041/bin/python3
+
 import argparse
 import os
 
