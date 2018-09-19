@@ -44,7 +44,7 @@ def file_name_from_path(path, dtype):
 def convert(cell, dtype):
     if dtype != np.uint8:
         raise RuntimeError("Only conversion to 'uint8' is supported")
-
+    print('Normalizing data...')
     min_intensity = np.amin(cell)
     max_intensity = np.amax(cell)
     cell -= min_intensity
@@ -82,4 +82,6 @@ for path in cell_paths:
                                        compression="gzip",
                                        compression_opts=1)
         cell = f_input[path]
-        dset[:] = convert(cell, dtype)
+        if output_dtype == np.uint8:
+            cell = convert(cell, dtype)
+        dset[:] = cell

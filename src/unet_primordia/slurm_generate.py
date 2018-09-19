@@ -1,14 +1,14 @@
-# interpolate_bn_lr0001_wd0005
 import os
 
 hyperparam_set = [
+    (True, True, 0.0001, 0),
+    (True, True, 0.0002, 0),
+    (True, True, 0.0005, 0),
+    (True, True, 0.001, 0),
     (True, True, 0.0001, 0.0005),
-    (False, True, 0.0001, 0.0005),
-    (True, False, 0.0001, 0.0005),
-    (False, False, 0.0001, 0.0005),
-    (True, True, 0.0002, 0.0001),
-    (True, True, 0.0005, 0.0001),
-    (True, True, 0.001, 0.0001)
+    (True, True, 0.0002, 0.0005),
+    (True, True, 0.0005, 0.0005),
+    (True, True, 0.001, 0.0005)
 ]
 
 out_channels = 6
@@ -46,7 +46,7 @@ def generate_slurm_script(hyperparams,
 #SBATCH -N 1				            
 #SBATCH -n 2				            
 #SBATCH --mem 12G			            
-#SBATCH -t 10:00:00                     
+#SBATCH -t 100:00:00                     
 #SBATCH -o {}			        
 #SBATCH -e {}			        
 #SBATCH --mail-type=FAIL,BEGIN,END		    
