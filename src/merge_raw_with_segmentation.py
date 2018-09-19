@@ -1,3 +1,13 @@
+"""
+Usage:
+python merge_raw_with_segmentation.py <DataDir>
+For each time point H5 raw data it takes the corresponding segmentation output file
+(files with suffix '_Multicut Segmentation.h5') and saves the segmentation
+inside the raw H5 data file. Additionally creates the necessary Bigcat attributes,
+so that in the end the files are ready for proofreading with Bigcat.
+
+"""
+
 import os
 import sys
 import numpy
@@ -11,20 +21,22 @@ def get_raw_and_segmented_time_points(dir_str):
 
     for file in os.listdir(dir):
         filename = os.fsdecode(file)
-        if filename.endswith("uint8.h5"):
-            raw_time_points.add(os.path.join(dir_str, filename))
-        elif filename.endswith("Multicut Segmentation.h5"):
-            segmented_time_points.add((os.path.join(dir_str, filename)))
+        if filename.endswith("h5"):
+            if filename.endswith("Multicut Segmentation.h5"):
+                segmented_time_points.add((os.path.join(dir_str, filename)))
+            else:
+                raw_time_points.add(os.path.join(dir_str, filename))
 
-    return raw_time_points, segmented_time_points
+    raw_to_segmented = {}
+    for raw_file in raw_time_points:
+        fn = os.path.split(raw_file)[1]
+        fn_prefix = fn.split('_')[0]
+        for segmented_file in segmented_time_points:
+            fn = os.path.split(segmented_file)[1]
+            if fn.startswith(fn_prefix):
+                raw_to_segmented[raw_file] = segmented_file
 
-
-def get_segmented_file(raw_data_path, segmented_time_points):
-    path = raw_data_path.split('.')[0] + "_Multicut Segmentation.h5"
-    if path in segmented_time_points:
-        return path
-    else:
-        return None
+    return raw_to_segmented
 
 
 def merge_raw_with_segmented(raw_data_path, segmented_file_path):
@@ -59,19 +71,12 @@ if len(sys.argv) != 2:
 
 dir_str = sys.argv[1]
 
-raw_time_points, segmented_time_points = get_raw_and_segmented_time_points(
-    dir_str)
+raw_to_segmented = get_raw_and_segmented_time_points(dir_str)
 
-if not (raw_time_points or segmented_time_points):
+if not raw_to_segmented:
     print(f"No raw data or segmentation found at {dir_str}")
     sys.exit(1)
 
-for raw_data_path in raw_time_points:
-    segmented_file_path = get_segmented_file(raw_data_path,
-                                             segmented_time_points)
-    if not segmented_file_path:
-        print(f"WARNING: Cannot find multicut segmentation for {raw_data_path}")
-    else:
-        print(
-            f"Merging raw data '{raw_data_path}' with '{segmented_file_path}'")
-        merge_raw_with_segmented(raw_data_path, segmented_file_path)
+for raw_data_path, segmented_file_path in raw_to_segmented.items():
+    print(f"Merging raw data '{raw_data_path}' with '{segmented_file_path}'")
+    merge_raw_with_segmented(raw_data_path, segmented_file_path)
