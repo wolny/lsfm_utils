@@ -45,8 +45,8 @@ def generate_slurm_script(hyperparams,
 #SBATCH -A kreshuk                              
 #SBATCH -N 1				            
 #SBATCH -n 2				            
-#SBATCH --mem 12G			            
-#SBATCH -t 100:00:00                     
+#SBATCH --mem 32G			            
+#SBATCH -t 48:00:00                     
 #SBATCH -o {}			        
 #SBATCH -e {}			        
 #SBATCH --mail-type=FAIL,BEGIN,END		    
