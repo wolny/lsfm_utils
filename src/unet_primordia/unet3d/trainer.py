@@ -22,6 +22,8 @@ class UNet3DTrainer:
         checkpoint_dir (string): dir for saving checkpoints and tensorboard logs
         max_num_epochs (int): maximum number of epochs
         max_num_iterations (int): maximum number of iterations
+        max_patience (int): number of validation steps with no improvement
+            after which the training will be stopped
         validate_after_iters (int): validate after that many iterations
         log_after_iters (int): number of iterations before logging to tensorboard
         validate_iters (int): number of validation iterations, if None validate
@@ -31,12 +33,9 @@ class UNet3DTrainer:
         num_epoch (int): useful when loading the model from the checkpoint
     """
 
-    # number of validation steps with no improvement after which training will be stopped
-    MAX_PATIENCE = 15
-
     def __init__(self, model, optimizer, loss_criterion, error_criterion,
                  device, loaders, checkpoint_dir,
-                 max_num_epochs=100, max_num_iterations=1e5,
+                 max_num_epochs=200, max_num_iterations=1e5, max_patience=20,
                  validate_after_iters=100, log_after_iters=100,
                  validate_iters=None, best_val_error=float('-inf'),
                  num_iterations=0, num_epoch=0, logger=None):
@@ -71,7 +70,8 @@ class UNet3DTrainer:
         self.num_iterations = num_iterations
         self.num_epoch = num_epoch
         # used for early stopping
-        self.patience = self.MAX_PATIENCE
+        self.max_patience = max_patience
+        self.patience = max_patience
 
     @classmethod
     def from_checkpoint(cls, checkpoint_path, model, optimizer, loss_criterion,
@@ -159,7 +159,7 @@ class UNet3DTrainer:
                 # remember best validation metric
                 is_best = self._is_best_val_error(val_error)
                 if is_best:
-                    self.patience = self.MAX_PATIENCE
+                    self.patience = self.max_patience
                 else:
                     self.patience -= 1
                     if self.patience <= 0:
