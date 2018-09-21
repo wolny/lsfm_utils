@@ -46,6 +46,7 @@ def generate_slurm_script(hyperparams,
     slurm_template = \
     '''#!/bin/bash
 
+#SBATCH -J {}
 #SBATCH -A kreshuk                              
 #SBATCH -N 1				            
 #SBATCH -n 2				            
@@ -83,7 +84,7 @@ export PYTHONPATH="/g/kreshuk/wolny/workspace/inferno:/g/kreshuk/wolny/workspace
     args = f'--config-dir {config_dir} --checkpoint-dir {project_dir} --validate-after-iters 100 --log-after-iters 100 --out-channels {out_channels} --learning-rate {lr} --weight-decay {wd} {interpolate} {batchnorm}'
 
     script_name = f'slurm_{checkpoint}.sh'
-    return script_name, slurm_template.format(outfile, errfile, train_script_path, args)
+    return script_name, slurm_template.format(checkpoint, outfile, errfile, train_script_path, args)
 
 
 def main():

@@ -94,14 +94,12 @@ class UNet3DTrainer:
 
     def fit(self):
         for _ in range(self.num_epoch, self.max_num_epochs):
-            self.adjust_learning_rate()
-
             # train for one epoch
             self.train(self.loaders['train'])
 
             if self.patience <= 0:
                 self.logger.info(
-                    f'Validation error did not improve for the last {self.MAX_PATIENCE} validation checks. Early stopping...')
+                    f'Validation error did not improve for the last {self.max_patience} validation checks. Early stopping...')
                 break
 
             if self.max_num_iterations < self.num_iterations:
@@ -110,10 +108,6 @@ class UNet3DTrainer:
                 break
 
             self.num_epoch += 1
-
-    def adjust_learning_rate(self):
-        num_epoch = self.num_epoch
-        pass
 
     def train(self, train_loader):
         train_losses = utils.RunningAverage()
@@ -161,6 +155,9 @@ class UNet3DTrainer:
                 if is_best:
                     self.patience = self.max_patience
                 else:
+                    # adjust learning rate when reaching half of the max_patience
+                    if self.patience == self.max_patience // 2:
+                        self._adjust_learning_rate()
                     self.patience -= 1
                     if self.patience <= 0:
                         # early stop the training
@@ -202,6 +199,19 @@ class UNet3DTrainer:
                 return val_errors.avg
         finally:
             self.model.train()
+
+    def _adjust_learning_rate(self):
+        """Sets the learning rate to the initial LR decayed by 10"""
+
+        def get_lr(optimizer):
+            for param_group in optimizer.param_groups:
+                return param_group['lr']
+
+        old_lr = get_lr(self.optimizer)
+        new_lr = 0.1 * old_lr
+        self.logger.info(f'Changing learning rate from {old_lr} to {new_lr}')
+        for param_group in self.optimizer.param_groups:
+            param_group['lr'] = new_lr
 
     def _is_best_val_error(self, val_error):
         is_best = val_error > self.best_val_error
