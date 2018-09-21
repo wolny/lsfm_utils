@@ -126,9 +126,14 @@ class ComposedLoss(nn.Module):
 
 class Random3DDataset(Dataset):
     """Generates random 3D dataset for testing and demonstration purposes.
+    Args:
+        N (int): batch size
+        size (tuple): dimensionality of each batch (DxHxW)
+        out_channels (int): number of output channel masks
     """
 
     def __init__(self, N, size, out_channels):
+        # raw dims: NxCxDxHxW, number of input channels equal to 1 (C=1)
         raw_dims = (N, 1) + size
         labels_dims = (N, out_channels) + size
         self.raw = torch.randn(raw_dims)
@@ -167,7 +172,7 @@ class DiceCoefficient(nn.Module):
 def find_maximum_patch_size(model, device):
     """Tries to find the biggest patch size that can be send to GPU for inference
     without throwing CUDA out of memory"""
-
+    logger = get_logger('PatchFinder')
     in_channels = model.in_channels
 
     patch_shapes = [(64, 128, 128), (96, 128, 128),
