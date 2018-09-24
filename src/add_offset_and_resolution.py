@@ -18,6 +18,7 @@ def add_offset_and_resolution(dir_str, dataset, offset=(0.0, 0.0, 0.0),
     for file in os.listdir(dir):
         filename = os.fsdecode(file)
         if filename.endswith("h5"):
+            print(f'Processing {filename}...')
             path = os.path.join(dir, filename)
             with h5py.File(path, "r+") as h5_file:
                 h5_file[dataset].attrs["resolution"] = resolution
