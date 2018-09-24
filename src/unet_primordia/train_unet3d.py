@@ -25,9 +25,9 @@ def _arg_parser():
     parser.add_argument('--interpolate',
                         help='use F.interpolate instead of ConvTranspose3d',
                         action='store_true')
-    parser.add_argument('--batchnorm',
-                        help='use BatchNorm3d before nonlinearity',
-                        action='store_true')
+    parser.add_argument('--layer-order', type=str,
+                        help="Conv layer ordering, e.g. 'brc' -> BatchNorm3d+ReLU+Conv3D",
+                        default='brc')
     parser.add_argument('--epochs', default=100, type=int,
                         help='max number of epochs')
     parser.add_argument('--learning-rate', default=0.0001, type=float,
@@ -43,10 +43,10 @@ def _arg_parser():
     return parser
 
 
-def _create_model(in_channels, out_channels, interpolate=False,
-                  final_sigmoid=True, batch_norm=True):
+def _create_model(in_channels, out_channels, layer_order, interpolate=False,
+                  final_sigmoid=True):
     return UNet3D(in_channels, out_channels, interpolate, final_sigmoid,
-                  batch_norm)
+                  conv_layer_order=layer_order)
 
 
 def _get_loaders(config_dir, logger):
@@ -95,9 +95,9 @@ def main():
     out_channels_as_classes = False
     final_sigmoid = not out_channels_as_classes
     model = _create_model(args.in_channels, args.out_channels,
+                          layer_order=args.layer_order,
                           interpolate=args.interpolate,
-                          final_sigmoid=final_sigmoid,
-                          batch_norm=args.batchnorm)
+                          final_sigmoid=final_sigmoid)
 
     model = model.to(device)
 

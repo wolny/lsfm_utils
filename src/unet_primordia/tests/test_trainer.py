@@ -1,3 +1,4 @@
+import logging
 import os
 
 import torch
@@ -21,8 +22,9 @@ class TestUNet3DTrainer(object):
             # Treat different output channels as different segmentation mask
             # Ground truth data should have the same number of channels in this case
             out_channels_as_classes = False
-            batch_norm = True
-            model = self._load_model(not out_channels_as_classes, batch_norm)
+            conv_layer_order = 'crb'
+            model = self._load_model(not out_channels_as_classes,
+                                     conv_layer_order)
             # Create criterion
             if out_channels_as_classes:
                 loss_criterion = nn.CrossEntropyLoss()
@@ -38,7 +40,7 @@ class TestUNet3DTrainer(object):
             optimizer = optim.Adam(model.parameters(), lr=learning_rate,
                                    weight_decay=weight_decay)
 
-            logger = get_logger('UNet3DTrainer')
+            logger = get_logger('UNet3DTrainer', logging.DEBUG)
             trainer = UNet3DTrainer(model, optimizer, loss_criterion,
                                     error_criterion,
                                     device, loaders, tmpdir,
@@ -55,13 +57,13 @@ class TestUNet3DTrainer(object):
                 model, optimizer, loss_criterion, error_criterion, loaders,
                 logger=logger)
 
-    def _load_model(self, final_sigmoid, batch_norm):
+    def _load_model(self, final_sigmoid, conv_layer_order):
         in_channels = 1
         out_channels = 2
         # use F.interpolate for upsampling
         interpolate = True
         return UNet3D(in_channels, out_channels, interpolate,
-                      final_sigmoid, batch_norm)
+                      final_sigmoid, conv_layer_order)
 
     def _get_loaders(self):
         # when using ConvTranspose3d, make sure that dimensions can be divided by 16

@@ -121,11 +121,11 @@ def main():
                         help='number of input channels')
     parser.add_argument('--out-channels', default=6, type=int,
                         help='number of output channels')
+    parser.add_argument('--layer-order', type=str,
+                        help="Conv layer ordering, e.g. 'brc' -> BatchNorm3d+ReLU+Conv3D",
+                        default='brc')
     parser.add_argument('--interpolate',
                         help='use F.interpolate instead of ConvTranspose3d',
-                        action='store_true')
-    parser.add_argument('--batchnorm',
-                        help='use BatchNorm3d before nonlinearity',
                         action='store_true')
 
     args = parser.parse_args()
@@ -135,9 +135,10 @@ def main():
     out_channels = args.out_channels
     # use F.interpolate for upsampling
     interpolate = args.interpolate
-    batch_norm = args.batchnorm
+    # Conv layer ordering e.g. 'cr' is equivalent to Conv3D+ReLU
+    conv_layer_order = args.layer_order
     model = UNet3D(in_channels, out_channels, interpolate=interpolate,
-                   final_sigmoid=True, batch_norm=batch_norm)
+                   final_sigmoid=True, conv_layer_order=conv_layer_order)
 
     logger.info(f'Loading model from {args.model_path}...')
     utils.load_checkpoint(args.model_path, model)
