@@ -43,7 +43,7 @@ def merge_raw_with_segmented(raw_data_path, segmented_file_path):
     with h5py.File(raw_data_path, "r+") as raw_data:
         with h5py.File(segmented_file_path, "r") as segmented_file:
             # add necessary attributes to the raw dataset
-            raw_data["channel_s00"].attrs["resolution"] = (0.25, 0.165, 0.165)
+            raw_data["channel_s00"].attrs["resolution"] = (0.25, 0.1625, 0.1625)
 
             # get segmented stack and reshape if necessary
             exported_data = numpy.squeeze(segmented_file["exported_data"])
@@ -60,7 +60,7 @@ def merge_raw_with_segmented(raw_data_path, segmented_file_path):
 
             # add necessary attributes to the labels dataset
             raw_data["/volumes/labels/segment_ids"].attrs["resolution"] = \
-                (0.25, 0.165, 0.165)
+                (0.25, 0.1625, 0.1625)
             raw_data["/volumes/labels/segment_ids"].attrs["offset"] = \
                 (0.0, 0.0, 0.0)
 
