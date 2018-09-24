@@ -208,7 +208,7 @@ class UNet3DTrainer:
                 return param_group['lr']
 
         old_lr = get_lr(self.optimizer)
-        new_lr = 0.1 * old_lr
+        new_lr = 0.75 * old_lr
         self.logger.info(f'Changing learning rate from {old_lr} to {new_lr}')
         for param_group in self.optimizer.param_groups:
             param_group['lr'] = new_lr

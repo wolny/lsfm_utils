@@ -1,18 +1,7 @@
 import os
 
 hyperparam_set = [
-    (True, True, 0.0001, 0),
-    (True, True, 0.0002, 0),
-    (True, True, 0.0005, 0),
-    (True, True, 0.001, 0),
-    (True, True, 0.0001, 0.0001),
-    (True, True, 0.0002, 0.0001),
-    (True, True, 0.0005, 0.0001),
-    (True, True, 0.001, 0.0001),
-    (True, True, 0.0001, 0.0005),
-    (True, True, 0.0002, 0.0005),
-    (True, True, 0.0005, 0.0005),
-    (True, True, 0.001, 0.0005)
+    (True, 'crb', 0.0002, 0.0005)
 ]
 
 out_channels = 6
@@ -27,16 +16,11 @@ def hyperparams_to_name(hp):
         False: 'no_interpolate'
     }
 
-    batchnorm = {
-        True: 'bn',
-        False: 'no_bn'
-    }
+    layer_order = hp[1]
 
     lr = float_to_str(hp[2])
     wd = float_to_str(hp[3])
-    return f'checkpoint_{interpolate[hp[0]]}_{batchnorm[hp[1]]}_lr{lr}_wd{wd}'
-
-    return os.path.join(prefix_dir, dirname)
+    return f'checkpoint_{interpolate[hp[0]]}_{layer_order}_lr{lr}_wd{wd}'
 
 
 def generate_slurm_script(hyperparams,
@@ -75,13 +59,11 @@ export PYTHONPATH="/g/kreshuk/wolny/workspace/inferno:/g/kreshuk/wolny/workspace
         interpolate = '--interpolate'
     else:
         interpolate = ''
-    if hyperparams[1]:
-        batchnorm = '--batchnorm'
-    else:
-        batchnorm = ''
+
+    layer_order = hyperparams[1]
     lr = hyperparams[2]
     wd = hyperparams[3]
-    args = f'--config-dir {config_dir} --checkpoint-dir {project_dir} --validate-after-iters 100 --log-after-iters 100 --out-channels {out_channels} --learning-rate {lr} --weight-decay {wd} {interpolate} {batchnorm}'
+    args = f'--config-dir {config_dir} --checkpoint-dir {project_dir} --validate-after-iters 100 --log-after-iters 100 --out-channels {out_channels} --layer-order {layer_order} --learning-rate {lr} --weight-decay {wd} {interpolate}'
 
     script_name = f'slurm_{checkpoint}.sh'
     return script_name, slurm_template.format(checkpoint, outfile, errfile, train_script_path, args)
