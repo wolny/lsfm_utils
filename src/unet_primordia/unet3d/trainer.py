@@ -213,7 +213,7 @@ class UNet3DTrainer:
         finally:
             self.model.train()
 
-    def _adjust_learning_rate(self):
+    def _adjust_learning_rate(self, decay_rate=0.75):
         """Sets the learning rate to the initial LR decayed by 10"""
 
         def get_lr(optimizer):
@@ -221,7 +221,7 @@ class UNet3DTrainer:
                 return param_group['lr']
 
         old_lr = get_lr(self.optimizer)
-        new_lr = 0.75 * old_lr
+        new_lr = decay_rate * old_lr
         self.logger.info(f'Changing learning rate from {old_lr} to {new_lr}')
         for param_group in self.optimizer.param_groups:
             param_group['lr'] = new_lr
