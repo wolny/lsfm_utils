@@ -1,10 +1,9 @@
 import os
 
 hyperparam_set = [
-    (True, 'crb', 0.0002, 0.0001),
-    (True, 'crb', 0.0002, 0.0003),
-    (True, 'brc', 0.0002, 0.0001),
-    (True, 'brc', 0.0002, 0.0003)
+    (False, 'brc', 0.0002, 0.0003),
+    (False, 'brc', 0.0002, 0.0005),
+    (False, 'cr', 0.0002, 0.0005)
 ]
 
 out_channels = 6
