@@ -21,15 +21,10 @@ class TestUNet3DTrainer(object):
 
             # Treat different output channels as different segmentation mask
             # Ground truth data should have the same number of channels in this case
-            out_channels_as_classes = False
             conv_layer_order = 'crb'
-            model = self._load_model(not out_channels_as_classes,
-                                     conv_layer_order)
-            # Create criterion
-            if out_channels_as_classes:
-                loss_criterion = nn.CrossEntropyLoss()
-            else:
-                loss_criterion = nn.BCELoss()
+            model = self._load_model(True, conv_layer_order)
+
+            loss_criterion = nn.BCELoss()
 
             error_criterion = DiceCoefficient()
 
