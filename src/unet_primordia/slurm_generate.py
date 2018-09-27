@@ -1,9 +1,7 @@
 import os
 
 hyperparam_set = [
-    (False, 'brc', 0.0002, 0.0003),
-    (False, 'brc', 0.0002, 0.0005),
-    (False, 'cr', 0.0002, 0.0005)
+    (False, 'brc', 0.0002, 0.0003, 'dice')
 ]
 
 out_channels = 6
@@ -22,7 +20,8 @@ def hyperparams_to_name(hp):
 
     lr = float_to_str(hp[2])
     wd = float_to_str(hp[3])
-    return f'checkpoint_{interpolate[hp[0]]}_{layer_order}_lr{lr}_wd{wd}'
+    loss = hp[4]
+    return f'checkpoint_{loss}_{interpolate[hp[0]]}_{layer_order}_lr{lr}_wd{wd}'
 
 
 def generate_slurm_script(hyperparams,
@@ -65,7 +64,8 @@ export PYTHONPATH="/g/kreshuk/wolny/workspace/inferno:/g/kreshuk/wolny/workspace
     layer_order = hyperparams[1]
     lr = hyperparams[2]
     wd = hyperparams[3]
-    args = f'--config-dir {config_dir} --checkpoint-dir {project_dir} --validate-after-iters 100 --log-after-iters 100 --out-channels {out_channels} --layer-order {layer_order} --learning-rate {lr} --weight-decay {wd} {interpolate}'
+    loss = hyperparams[4]
+    args = f'--config-dir {config_dir} --checkpoint-dir {project_dir} --loss {loss} --validate-after-iters 100 --log-after-iters 100 --out-channels {out_channels} --layer-order {layer_order} --learning-rate {lr} --weight-decay {wd} {interpolate}'
 
     script_name = f'slurm_{checkpoint}.sh'
     return script_name, slurm_template.format(checkpoint, outfile, errfile, train_script_path, args)
