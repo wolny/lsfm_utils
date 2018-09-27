@@ -8,6 +8,7 @@ from torch.utils.data import DataLoader
 from unet3d.model import UNet3D
 from unet3d.trainer import UNet3DTrainer
 from unet3d.utils import DiceCoefficient
+from unet3d.utils import DiceLoss
 from unet3d.utils import Random3DDataset
 from unet3d.utils import get_logger
 
@@ -24,7 +25,7 @@ class TestUNet3DTrainer(object):
             conv_layer_order = 'crb'
             model = self._load_model(True, conv_layer_order)
 
-            loss_criterion = nn.BCELoss()
+            loss_criterion = DiceLoss()
 
             error_criterion = DiceCoefficient()
 
