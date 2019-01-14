@@ -38,16 +38,10 @@ with h5py.File(raw_h5_file, "r") as raw_h5:
     with h5py.File(labels_h5_file, "r") as labels_h5:
         with h5py.File(output_h5_file, "w") as output_h5:
             raw = raw_h5["/channel_s00"]
-            labels = labels_h5["/volumes/labels/merged_ids"]
-            datasets = {
-                '/volumes/raw': raw,
-                '/volumes/labels': labels,
-                '/volumes/stacked': numpy.stack([raw, labels], axis=-1)
-            }
+            labels = labels_h5["/volumes/labels/merged_ids"][...].astype(numpy.uint16)
 
-            for k, v in datasets.items():
-                output_h5.create_dataset(
-                    k,
-                    data=v,
-                    dtype=numpy.uint16,
-                    compression="gzip")
+            output_h5.create_dataset(
+                '/volumes/stacked',
+                data=numpy.stack([raw, labels], axis=-1),
+                dtype=numpy.uint16,
+                compression="gzip")
